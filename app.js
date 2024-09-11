@@ -34,7 +34,7 @@ app.use(
     cookie: {
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
-  })
+  }),
 );
 
 app.use(passport.initialize());
@@ -63,8 +63,8 @@ passport.use(
         .catch((error) => {
           return done(error);
         });
-    }
-  )
+    },
+  ),
 );
 
 passport.serializeUser((user, done) => {
@@ -131,10 +131,10 @@ app.post(
       console.error("Error during role assignment:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
-app.get("/Educator_dashboard", requireRoles(["educator"]), (req, res) => {
+app.get("/Educator_dashboard", requireRoles(["Educator"]), (req, res) => {
   res.render("Educator_dashboard", {
     title: "Educator Dashboard",
     csrfToken: req.csrfToken(),

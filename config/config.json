@@ -1,10 +1,11 @@
 {
   "development": {
-    "username": "root",
-    "password": null,
-    "database": "database_development",
+    "username": "postgres",
+    "password": "Yash@194",
+    "database": "LMS_portal",
     "host": "127.0.0.1",
-    "dialect": "postgres"
+    "dialect": "postgres",
+     "port": 5432
   },
   "test": {
     "username": "root",

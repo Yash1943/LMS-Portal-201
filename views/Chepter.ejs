@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title><% title %></title>
     <link
       href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
       rel="stylesheet" />
@@ -11,10 +11,6 @@
   </head>
   <body class="bg-gray-100">
     <div class="container mx-auto m-20 p-10 bg-white shadow-lg rounded-lg">
-      <div class="mb-6">
-        <%- include('header.ejs') %>
-      </div>
-
       <nav class="mb-6">
         <a
           href="/Educator_dashboard"
@@ -22,6 +18,9 @@
           Educator Dashboard >
         </a>
       </nav>
+       <div class="mb-6">
+        <%- include('header.ejs') %>
+      </div>
 
       <div class="flex items-center justify-between p-6 bg-gray-50 rounded-lg">
         <div>

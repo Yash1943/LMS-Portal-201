@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet" />
+    <meta name="csrf-token" content="<%= csrfToken %>" />
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+}
+
+.editor-toolbar {
+    border: 1px solid #ccc;
+    padding: 10px;
+    background-color: #f4f4f4;
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.editor-toolbar button, .editor-toolbar select, .editor-toolbar input[type="color"] {
+    padding: 5px;
+}
+
+.editor-content {
+    border: 1px solid #ccc;
+    padding: 10px;
+    min-height: 200px;
+    background-color: #fff;
+}
+    </style>
+  </head>
+  <body class="bg-gray-100">
+    <div class="container mx-auto m-20 p-10 bg-white shadow-lg rounded-lg">
+      <nav class="mb-4">
+        <a
+          href="/Educator_dashboard"
+          class="text-blue-600 underline hover:text-blue-800 font-semibold text-lg">
+          Educator Dashboard >
+        </a>
+        <a
+          href="/viewcourse/<%= courseId %>"
+          class="text-blue-600 underline hover:text-blue-800 font-semibold text-lg">
+          Chapters >
+        </a>
+      </nav>
+      <div class="mb-6"><%- include('header.ejs') %></div>
+      <h1 class="mb-6 text-2xl m-6 p-4">Add Content in <%= chapter.title %></h1>
+      <form action="/viewcourse/<%= course.id %>/chapters/<%= chapter.id %>/addcontent" method="POST">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="mb-4">
+        <label for="contentTitle" class="block text-sm font-medium text-gray-700">Content Title</label>
+        <input type="text" id="contentTitle" name="contentTitle" class="input-field shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+      </div>
+        <div class="mb-4 flex">
+        <label for="chapterSelect" class="block text-sm font-medium text-gray-700">Chapters</label>
+        <select id="chapterSelect" name="chapterSelect" class="input-field shadow appearance-none border rounded w-56 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ml-4" required>
+          <% chapters.forEach(chapter => { %>
+            <option value="<%= chapter.id %>"><%= chapter.title %></option>
+          <% }) %>
+        </select>
+      </div>
+        <div class="mb-4">
+            <label for="contentDescription" class="block text-sm font-medium text-gray-700">Content Description</label>
+            <textarea id="contentDescription" name="contentDescription" class="input-field shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required></textarea>
+        </div>
+             <div class="editor-toolbar">
+        <button onclick="execCmd('bold')"><b>B</b></button>
+        <button onclick="execCmd('italic')"><i>I</i></button>
+        <button onclick="execCmd('underline')"><u>U</u></button>
+        <button onclick="execCmd('undo')">Undo</button>
+        <button onclick="execCmd('redo')">Redo</button>
+        <select onchange="execCmd('fontName', this.value)">
+            <option value="Arial">Arial</option>
+            <option value="Courier">Courier</option>
+            <option value="Verdana">Verdana</option>
+        </select>
+        <button onclick="execCmd('insertImage', prompt('Enter image URL:', 'http://'))">Image</button>
+        <!-- <button onclick="execCmd('insertHTML', '&symbol;')">Symbol</button> -->
+        <!-- <input type="color" onchange="execCmd('foreColor', this.value)"> -->
+    </div>
+    <div class="editor-content" contenteditable="true"></div>
+    <div class="py-3"></div>
+            <button
+              type="submit"
+              class="bg-blue-500 font-medium px-5 py-2 rounded text-white hover:bg-blue-600">
+              Submit
+            </button>
+          </div>
+      </form>
+    </div>
+    <script>
+        function execCmd(command, value = null) {
+    document.execCommand(command, false, value);
+}
+    </script>
+  </body>
+</html>

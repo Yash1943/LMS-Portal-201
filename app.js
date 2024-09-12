@@ -300,14 +300,33 @@ app.post(
 );
 
 app.get(
-  `/viewcourse/:viewcourses.id/chapters/:chapter.id/addcontent`,
+  "/viewcourse/:courseId/chapters/:chapterId/addcontent",
   requireRoles(["Educator"]),
   async (req, res) => {
-    res.render("addContent", {
-      title: "Add Content",
-      csrfToken: req.csrfToken(),
-    });
+    try {
+      const { courseId, chapterId } = req.params;
+
+      const course = await Course.findOne({ where: { id: courseId } });
+      const chapter = await Chapter.findOne({
+        where: { id: chapterId, courseId: courseId },
+      });
+      const chapters = await Chapter.findAll({ where: { courseId: courseId } });
+
+      if (!course || !chapter) {
+        return res.status(404).json({ error: "Course or Chapter not found" });
+      }
+
+      res.render("addContent", {
+        title: "Add Content",
+        csrfToken: req.csrfToken(),
+        course,
+        chapter,
+        chapters, // Pass the list of chapters to the template
+      });
+    } catch (error) {
+      console.error("Error fetching course or chapter details:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
   },
 );
-
 module.exports = app;

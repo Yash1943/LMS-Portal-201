@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet" />
+    <meta name="csrf-token" content="<%= csrfToken %>" />
+  </head>
+  <body class="bg-gray-100">
+  <div class="container mx-auto m-10 p-8 bg-white shadow-lg rounded-lg">
+      <div class="mb-2">
+        <%- include('header.ejs') %>
+      </div>
+      <nav class="mb-4"></nav>
+        <a
+          href="/Educator_dashboard"
+          class="text-blue-600 underline hover:text-blue-800 font-semibold text-lg">
+          Educator Dashboard >
+        </a>
+         <a
+          href="/viewcourse/<%= courseID %>"
+          class="text-blue-600 underline hover:text-blue-800 font-semibold text-lg">
+          Chapters >
+        </a>
+      </nav>
+      <h1 class="mb-6 text-2xl m-6 p-4">Create Chapter</h1>
+      <div class="">
+          <div class="col-start-3 col-span-2">
+            <form action="/viewcourse/<%= courseID %>/chapters/newchapter" method="POST">
+                 <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                 <div class="py-3">
+            <label for="chapterName">What is the name of the chapter</label>
+            <input
+              type="text"
+              name="chapterName"
+              class="border border-gray-300 text-gray-900 rounded m-4 p-2 w-full" />
+          </div>
+              <div class="py-1">
+            <label for="chapterName">Description</label>
+            <textarea name="description" id="description" class="border border-gray-300 text-gray-900 rounded m-4 p-6 w-full"></textarea>
+          </div>
+            <div class="py-3">
+            <button
+              type="submit"
+              class="bg-blue-600 font-medium px-5 py-2 rounded text-white hover:bg-blue-800">
+              Submit
+            </button>
+          </div>
+            </form>
+          </div>
+
+      </div>
+  </body>
+</html>

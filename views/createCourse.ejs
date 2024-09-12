@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet" />
+    <meta name="csrf-token" content="<%= csrfToken %>" />
+  </head>
+  <body>
+    <div class="grid grid-cols-8">
+      <div class="col-start-3 col-span-2">
+        <nav class="m-4 p-2">
+          <a class="font-bold text-blue-400" href="/Educator_dashboard">Dashboard</a> >
+        </nav>
+        <h1 class="text-2xl text-gray-600 m-4 p-2">Create a Course</h1>
+        <form action="/createCourse" method="POST" class="m-4 p-2 flex flex-col">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <div class="py-3">
+            <label for="courseName">Course Name</label>
+            <input
+              type="text"
+              id="courseName"
+              class="border border-gray-300 text-gray-900 rounded p-2 w-full"
+              name="courseName" />
+          </div>
+          <div class="py-3">
+            <label for="courseDescription">Course Description</label>
+            <input
+              type="text"
+              id="courseDescription"
+              class="border border-gray-300 text-gray-900 rounded p-2 w-full"
+              name="courseDescription" />
+          </div>
+          <div class="py-3">
+            <button
+              type="submit"
+              class="bg-blue-500 font-medium px-5 py-2 rounded text-white hover:bg-blue-600">
+              Create Course
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

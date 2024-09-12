@@ -8,73 +8,73 @@
       href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
       rel="stylesheet" />
     <meta name="csrf-token" content="<%= csrfToken %>" />
-<style>
-    .body {
-  background-color: #d1ebef;
-  font-family: "Arial", sans-serif;
-}
-.header-text {
-  color: #12f519;
-  font-weight: bold;
-}
-.form-container {
-  background-color: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  margin-top: 20px;
-  transition: all 0.3s ease;
-}
-.input-field {
-  border: 2px solid #17ba17;
-  border-radius: 5px;
-  padding: 10px;
-  margin-bottom: 10px;
-}
-.forgot-password {
-  color: #1b9a4e;
-  text-align: right;
-}
-.sign-in-button {
-  background-color: #13be6f;
-  color: white;
-  font-weight: bold;
-  width: 100%;
-  padding: 10px;
-  border-radius: 5px;
-  margin-top: 10px;
-}
-.sign-up-link {
-  color: #1b9a63;
-  font-weight: bold;
-}
-.footer {
-  background-color: #c7e6e8;
-  width: 100%;
-  padding: 10px;
-}
-.tab-active {
-  background-color: #a0e3cd;
-}
-.tab-inactive {
-  background-color: #ffffff;
-}
-.smooth-appear {
-  opacity: 0;
-  transform: translateY(-20px);
-  animation: appear 0.5s ease forwards;
-}
-@keyframes appear {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-</style>
+    <style>
+      .body {
+        background-color: #d1ebef;
+        font-family: "Arial", sans-serif;
+      }
+      .header-text {
+        color: #12f519;
+        font-weight: bold;
+      }
+      .form-container {
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-top: 20px;
+        transition: all 0.3s ease;
+      }
+      .input-field {
+        border: 2px solid #17ba17;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 10px;
+      }
+      .forgot-password {
+        color: #1b9a4e;
+        text-align: right;
+      }
+      .sign-in-button {
+        background-color: #13be6f;
+        color: white;
+        font-weight: bold;
+        width: 100%;
+        padding: 10px;
+        border-radius: 5px;
+        margin-top: 10px;
+      }
+      .sign-up-link {
+        color: #1b9a63;
+        font-weight: bold;
+      }
+      .footer {
+        background-color: #c7e6e8;
+        width: 100%;
+        padding: 10px;
+      }
+      .tab-active {
+        background-color: #a0e3cd;
+      }
+      .tab-inactive {
+        background-color: #ffffff;
+      }
+      .smooth-appear {
+        opacity: 0;
+        transform: translateY(-20px);
+        animation: appear 0.5s ease forwards;
+      }
+      @keyframes appear {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
     <title><%= title %></title>
   </head>
-  <body  class="flex flex-col items-center justify-center min-h-screen">
-      <main class="flex flex-col items-center relative">
+  <body class="flex flex-col items-center justify-center min-h-screen">
+    <main class="flex flex-col items-center relative">
       <div class="px-10 py-8 rounded-lg shadow-lg form-container smooth-appear">
         <h1 class="header-text text-2xl mb-4">SIGN UP TO YOUR ACCOUNT</h1>
         <div class="flex mb-6 justify-center space-x-4">
@@ -83,7 +83,9 @@
             class="header-text-tab text-gray-600 px-4 py-2 rounded tab-active">
             As Educator
           </button>
-          <button id="signin-child-tab" class="header-text-tab text-gray-600 px-4 py-2 rounded tab-inactive">
+          <button
+            id="signin-child-tab"
+            class="header-text-tab text-gray-600 px-4 py-2 rounded tab-inactive">
             AS Learner
           </button>
         </div>
@@ -92,9 +94,9 @@
           class="form-container w-full max-w-xs relative z-10 justify-center"
           id="signin-form-container">
           <form id="signin-parent-form" class="space-y-4" action="/users" method="POST">
-             <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-             <input type="hidden" name="role" value="Educator" />
-              <div class="mb-4">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+            <input type="hidden" name="role" value="Educator" />
+            <div class="mb-4">
               <label for="Name" class="block text-sm font-medium">Name</label>
               <input
                 type="text"
@@ -131,9 +133,9 @@
             </div>
           </form>
           <form id="signin-child-form" class="space-y-4 hidden" action="/users" method="POST">
-             <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-               <input type="hidden" name="role" value="Learner" />
-               <div class="mb-4">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+            <input type="hidden" name="role" value="Learner" />
+            <div class="mb-4">
               <label for="Name" class="block text-sm font-medium">Name</label>
               <input
                 type="text"
@@ -172,34 +174,33 @@
             </div>
           </form>
           <p class="mt-4 text-center">
-            Already have an account? <a href="/signin" class="sign-up-link">SIGN IN</a>
+            Already have an account? <a href="/login" class="sign-up-link">SIGN IN</a>
           </p>
         </div>
       </div>
     </main>
     <script>
-document.getElementById("signin-parent-tab").addEventListener("click", function () {
-  document.getElementById("signin-parent-form").classList.remove("hidden");
-  document.getElementById("signin-child-form").classList.add("hidden");
-  this.classList.add("tab-active");
-  this.classList.remove("tab-inactive");
-  document.getElementById("signin-child-tab").classList.remove("tab-active");
-  document.getElementById("signin-child-tab").classList.add("tab-inactive");
-});
+      document.getElementById("signin-parent-tab").addEventListener("click", function () {
+        document.getElementById("signin-parent-form").classList.remove("hidden");
+        document.getElementById("signin-child-form").classList.add("hidden");
+        this.classList.add("tab-active");
+        this.classList.remove("tab-inactive");
+        document.getElementById("signin-child-tab").classList.remove("tab-active");
+        document.getElementById("signin-child-tab").classList.add("tab-inactive");
+      });
 
-document.getElementById("signin-child-tab").addEventListener("click", function () {
-  document.getElementById("signin-parent-form").classList.add("hidden");
-  document.getElementById("signin-child-form").classList.remove("hidden");
-  this.classList.add("tab-active");
-  this.classList.remove("tab-inactive");
-  document.getElementById("signin-parent-tab").classList.remove("tab-active");
-  document.getElementById("signin-parent-tab").classList.add("tab-inactive");
-});
+      document.getElementById("signin-child-tab").addEventListener("click", function () {
+        document.getElementById("signin-parent-form").classList.add("hidden");
+        document.getElementById("signin-child-form").classList.remove("hidden");
+        this.classList.add("tab-active");
+        this.classList.remove("tab-inactive");
+        document.getElementById("signin-parent-tab").classList.remove("tab-active");
+        document.getElementById("signin-parent-tab").classList.add("tab-inactive");
+      });
 
-window.addEventListener("DOMContentLoaded", function () {
-  document.getElementById("signin-form-container").classList.add("smooth-appear");
-});
-
+      window.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("signin-form-container").classList.add("smooth-appear");
+      });
     </script>
   </body>
 </html>

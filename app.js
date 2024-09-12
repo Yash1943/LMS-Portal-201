@@ -34,7 +34,7 @@ app.use(
     cookie: {
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
-  })
+  }),
 );
 
 app.use(passport.initialize());
@@ -63,8 +63,8 @@ passport.use(
         .catch((error) => {
           return done(error);
         });
-    }
-  )
+    },
+  ),
 );
 
 passport.serializeUser((user, done) => {
@@ -141,7 +141,7 @@ app.post(
       console.error("Error during role assignment:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 app.get("/Educator_dashboard", requireRoles(["Educator"]), async (req, res) => {
@@ -192,7 +192,7 @@ app.get(
     } catch (error) {
       console.log(error);
     }
-  }
+  },
 );
 
 app.post("/users", async (req, res) => {
@@ -218,8 +218,11 @@ app.get(
 
   requireRoles(["Educator"]),
   async (req, res) => {
-    res.render("createCourse", { title: "Create Course", csrfToken: req.csrfToken() });
-  }
+    res.render("createCourse", {
+      title: "Create Course",
+      csrfToken: req.csrfToken(),
+    });
+  },
 );
 
 app.post("/createCourse", async (req, res) => {
@@ -252,7 +255,7 @@ app.get("/viewcourse/:id", requireRoles(["Educator"]), async (req, res) => {
         title: "Create Chepter",
         csrfToken: req.csrfToken(),
         viewcourses,
-        chapters
+        chapters,
       });
     } else {
       res.json({ viewcourses });
@@ -262,11 +265,19 @@ app.get("/viewcourse/:id", requireRoles(["Educator"]), async (req, res) => {
   }
 });
 
-app.get("/viewcourse/:id/chapters/newchapter", requireRoles(["Educator"]), async (req, res) => {
-  courseID = req.params.id;
-  console.log("courseId", courseID);
-  res.render("newChepter", { title: "Create Chepter", courseID, csrfToken: req.csrfToken() });
-});
+app.get(
+  "/viewcourse/:id/chapters/newchapter",
+  requireRoles(["Educator"]),
+  async (req, res) => {
+    courseID = req.params.id;
+    console.log("courseId", courseID);
+    res.render("newChepter", {
+      title: "Create Chepter",
+      courseID,
+      csrfToken: req.csrfToken(),
+    });
+  },
+);
 
 app.post(
   "/viewcourse/:courseID/chapters/newchapter",
@@ -285,13 +296,18 @@ app.post(
     } catch (error) {
       console.log(error);
     }
-  }
+  },
 );
 
-
-app.get(`/viewcourse/:viewcourses.id/chapters/:chapter.id/addcontent`, requireRoles(["Educator"]), async (req, res) => {
-  res.render("addContent", { title: "Add Content", csrfToken: req.csrfToken() });
-}
+app.get(
+  `/viewcourse/:viewcourses.id/chapters/:chapter.id/addcontent`,
+  requireRoles(["Educator"]),
+  async (req, res) => {
+    res.render("addContent", {
+      title: "Add Content",
+      csrfToken: req.csrfToken(),
+    });
+  },
 );
 
 module.exports = app;

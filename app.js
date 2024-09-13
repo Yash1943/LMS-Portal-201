@@ -91,7 +91,7 @@ const requireRoles = (roles) => {
     }
   };
 };
-const { User, Course, Chapter } = require("./models");
+const { User, Course, Chapter, ChapterPages } = require("./models");
 
 app.get("/", (req, res) => {
   res.render("index", { title: "LMS Portal", csrfToken: req.csrfToken() });
@@ -307,6 +307,7 @@ app.get(
       const { courseId, chapterId } = req.params;
 
       const course = await Course.findOne({ where: { id: courseId } });
+      console.log("course", course);
       const chapter = await Chapter.findOne({
         where: { id: chapterId, courseId: courseId },
       });
@@ -329,4 +330,62 @@ app.get(
     }
   },
 );
+
+app.post(
+  "/viewcourse/:courseId/chapters/:chapterId/addcontent",
+  requireRoles(["Educator"]),
+  async (req, res) => {
+    try {
+      // console.log("contentDescription :", req.body);
+      // console.log("chapterID", req.body.chapterSelect);
+      const courseId = req.params.courseId;
+      await ChapterPages.create({
+        title: req.body.contentTitle,
+        chapterID: req.body.chapterSelect,
+        description: req.body.contentDescription,
+      });
+      res.redirect(`/viewcourse/${courseId}`);
+    } catch (error) {
+      console.error("Error adding content:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+);
+
+app.get(
+  "/viewcourse/:courseId/chapters/:chapterId/content",
+  requireRoles(["Educator"]),
+  async (req, res) => {
+    try {
+      const { courseId, chapterId } = req.params;
+      const course = await Course.findOne({ where: { id: courseId } });
+      const chapter = await Chapter.findOne({
+        where: { id: chapterId, courseId: courseId },
+      });
+      // console.log("course", course);
+      // console.log("chapter", chapter);
+      const content = await ChapterPages.findAll({
+        where: { chapterID: chapterId },
+      });
+      // console.log(chapter.title);
+      console.log("content title", content.title);
+      console.log("content chapterID", content.chapterID);
+      console.log("content description", content.description);
+
+      if (req.accepts("html")) {
+        res.render("viewContent", {
+          title: "View Content",
+          csrfToken: req.csrfToken(),
+          course,
+          chapter,
+          content,
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching content:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+);
+
 module.exports = app;

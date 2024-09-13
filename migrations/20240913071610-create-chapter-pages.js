@@ -2,24 +2,21 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("Courses", {
+    await queryInterface.createTable("ChapterPages", {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      name: {
+      title: {
         type: Sequelize.STRING,
       },
-      photoOfCourse: {
-        type: Sequelize.STRING,
+      chapterID: {
+        type: Sequelize.INTEGER,
       },
       description: {
-        type: Sequelize.STRING,
-      },
-      educatorName: {
-        type: Sequelize.STRING,
+        type: Sequelize.TEXT,
       },
       createdAt: {
         allowNull: false,
@@ -33,6 +30,6 @@ module.exports = {
   },
   // eslint-disable-next-line no-unused-vars
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("Courses");
+    await queryInterface.dropTable("ChapterPages");
   },
 };

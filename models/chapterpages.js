@@ -1,0 +1,27 @@
+"use strict";
+const { Model } = require("sequelize");
+module.exports = (sequelize, DataTypes) => {
+  class ChapterPages extends Model {
+    /**
+     * Helper method for defining associations.
+     * This method is not a part of Sequelize lifecycle.
+     * The `models/index` file will call this method automatically.
+     */
+    // eslint-disable-next-line no-unused-vars
+    static associate(models) {
+      // define association here
+    }
+  }
+  ChapterPages.init(
+    {
+      title: DataTypes.STRING,
+      chapterID: DataTypes.INTEGER,
+      description: DataTypes.TEXT,
+    },
+    {
+      sequelize,
+      modelName: "ChapterPages",
+    },
+  );
+  return ChapterPages;
+};

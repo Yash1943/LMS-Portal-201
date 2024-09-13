@@ -27,10 +27,15 @@
 }
 
 .editor-content {
-    border: 1px solid #ccc;
-    padding: 10px;
-    min-height: 200px;
-    background-color: #fff;
+    width: 100%;          /* Make it full width */
+    overflow: hidden;     /* Prevent overflow */
+    white-space: normal;  /* Wrap text normally */
+    word-wrap: break-word; /* Break long words */
+    border: 1px solid #ccc; /* Optional: Add a border */
+    padding: 10px;        /* Optional: Add padding for better appearance */
+    min-height: 100px;    /* Set a minimum height */
+    max-height: 300px;    /* Set a maximum height */
+    overflow-y: auto;     /* Add vertical scroll for long content */
 }
     </style>
   </head>
@@ -49,7 +54,7 @@
         </a>
       </nav>
       <div class="mb-6"><%- include('header.ejs') %></div>
-      <h1 class="mb-6 text-2xl m-6 p-4">Add Content in <%= chapter.title %></h1>
+      <h1 class="mb-6 text-2xl m-6 p-4">Add Content in <%= course.name %></h1>
       <form action="/viewcourse/<%= course.id %>/chapters/<%= chapter.id %>/addcontent" method="POST">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="mb-4">
@@ -66,8 +71,6 @@
       </div>
         <div class="mb-4">
             <label for="contentDescription" class="block text-sm font-medium text-gray-700">Content Description</label>
-            <textarea id="contentDescription" name="contentDescription" class="input-field shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required></textarea>
-        </div>
              <div class="editor-toolbar">
         <button onclick="execCmd('bold')"><b>B</b></button>
         <button onclick="execCmd('italic')"><i>I</i></button>
@@ -80,11 +83,9 @@
             <option value="Verdana">Verdana</option>
         </select>
         <button onclick="execCmd('insertImage', prompt('Enter image URL:', 'http://'))">Image</button>
-        <!-- <button onclick="execCmd('insertHTML', '&symbol;')">Symbol</button> -->
-        <!-- <input type="color" onchange="execCmd('foreColor', this.value)"> -->
     </div>
-    <div class="editor-content" contenteditable="true"></div>
-    <div class="py-3"></div>
+    <textarea class="editor-content w-full" name="contentDescription" contenteditable="true"></textarea>
+    <div class="py-3">
             <button
               type="submit"
               class="bg-blue-500 font-medium px-5 py-2 rounded text-white hover:bg-blue-600">

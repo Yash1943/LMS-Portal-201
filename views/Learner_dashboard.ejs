@@ -4,10 +4,31 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><%= title %></title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet" />
     <meta name="csrf-token" content="<%= csrfToken %>" />
   </head>
-  <body>
-    <h1>Learner Dashboard</h1>
-    <a href="/signout">Logout</a>
+  <body class="bg-gray-100">
+    <div class="max-w-4xl mx-auto p-6">
+      <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Learner Dashboard</h1>
+      <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+        <div class="flex">
+          <h1 class="m-4 p-2 text-3xl text-gray-600">Welcome to <%= user.name %></h1>
+          <a
+            class="ml-96 p-2 bg-red-600 hover:bg-red-800 w-20 h-10 font-medium text-white rounded"
+            href="/signout"
+            >Logout</a
+          >
+        </div>
+        <h2 class="ml-7 text-xl">
+          The Following courses are available.Pick what you would like to learn today
+        </h2>
+      </div>
+    </div>
+    <div class="max-w-7xl mx-auto">
+      <hr class="border-black" />
+    </div>
+    <%- include('viewCourses.ejs') %>
   </body>
 </html>

@@ -34,7 +34,7 @@ app.use(
     cookie: {
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
-  }),
+  })
 );
 
 app.use(passport.initialize());
@@ -63,8 +63,8 @@ passport.use(
         .catch((error) => {
           return done(error);
         });
-    },
-  ),
+    }
+  )
 );
 
 passport.serializeUser((user, done) => {
@@ -141,7 +141,7 @@ app.post(
       console.error("Error during role assignment:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
-  },
+  }
 );
 
 app.get("/Educator_dashboard", requireRoles(["Educator"]), async (req, res) => {
@@ -151,6 +151,7 @@ app.get("/Educator_dashboard", requireRoles(["Educator"]), async (req, res) => {
     const name = userDetail.name;
     const Role = userDetail.role;
     const viewcourses = await Course.getCourseByEducatorId();
+    const userRole = req.user.role;
     console.log("viewcourses", viewcourses);
     // console.log("name", userDetail);
     if (req.accepts("html")) {
@@ -161,6 +162,7 @@ app.get("/Educator_dashboard", requireRoles(["Educator"]), async (req, res) => {
         Role,
         userId,
         viewcourses,
+        userRole,
       });
     } else {
       res.json({ name, Role, userId, viewcourses });
@@ -177,14 +179,18 @@ app.get(
   async (req, res) => {
     try {
       const userId = req.user.id;
-      const name = await User.findOne({ where: { id: userId } });
-      console.log("name", name);
+      const userRole = req.user.role;
 
+      // console.log("userRole", userRole);
+      const user = await User.findOne({ where: { id: userId } });
+      const viewcourses = await Course.getCourseByEducatorId();
       if (req.accepts("html")) {
         res.render("Learner_dashboard", {
           title: "Learner Dashboard",
           csrfToken: req.csrfToken(),
-          name,
+          user,
+          userRole,
+          viewcourses,
         });
       } else {
         res.json({ name });
@@ -192,7 +198,7 @@ app.get(
     } catch (error) {
       console.log(error);
     }
-  },
+  }
 );
 
 app.post("/users", async (req, res) => {
@@ -222,7 +228,7 @@ app.get(
       title: "Create Course",
       csrfToken: req.csrfToken(),
     });
-  },
+  }
 );
 
 app.post("/createCourse", async (req, res) => {
@@ -242,13 +248,14 @@ app.post("/createCourse", async (req, res) => {
   }
 });
 
-app.get("/viewcourse/:id", requireRoles(["Educator"]), async (req, res) => {
+app.get("/viewcourse/:id", requireRoles(["Educator","Learner"]), async (req, res) => {
   try {
     courseId = req.params.id;
     console.log("courseId", courseId);
     const viewcourses = await Course.findOne({ where: { id: courseId } });
     const chapters = await Chapter.findAll({ where: { courseId: courseId } });
     console.log("chapters: ", chapters);
+    const userRole = req.user.role;
     // console.log("viewcourses", viewcourses);
     if (req.accepts("html")) {
       res.render("Chepter", {
@@ -256,6 +263,7 @@ app.get("/viewcourse/:id", requireRoles(["Educator"]), async (req, res) => {
         csrfToken: req.csrfToken(),
         viewcourses,
         chapters,
+        userRole,
       });
     } else {
       res.json({ viewcourses });
@@ -265,19 +273,15 @@ app.get("/viewcourse/:id", requireRoles(["Educator"]), async (req, res) => {
   }
 });
 
-app.get(
-  "/viewcourse/:id/chapters/newchapter",
-  requireRoles(["Educator"]),
-  async (req, res) => {
-    courseID = req.params.id;
-    console.log("courseId", courseID);
-    res.render("newChepter", {
-      title: "Create Chepter",
-      courseID,
-      csrfToken: req.csrfToken(),
-    });
-  },
-);
+app.get("/viewcourse/:id/chapters/newchapter", requireRoles(["Educator"]), async (req, res) => {
+  courseID = req.params.id;
+  console.log("courseId", courseID);
+  res.render("newChepter", {
+    title: "Create Chepter",
+    courseID,
+    csrfToken: req.csrfToken(),
+  });
+});
 
 app.post(
   "/viewcourse/:courseID/chapters/newchapter",
@@ -296,7 +300,7 @@ app.post(
     } catch (error) {
       console.log(error);
     }
-  },
+  }
 );
 
 app.get(
@@ -328,7 +332,7 @@ app.get(
       console.error("Error fetching course or chapter details:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  },
+  }
 );
 
 app.post(
@@ -349,7 +353,7 @@ app.post(
       console.error("Error adding content:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  },
+  }
 );
 
 app.get(
@@ -385,7 +389,7 @@ app.get(
       console.error("Error fetching content:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  },
+  }
 );
 
 module.exports = app;

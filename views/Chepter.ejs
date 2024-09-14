@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><% title %></title>
+    <title><%= title %></title>
     <link
       href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
       rel="stylesheet" />
@@ -12,53 +12,81 @@
   <body class="bg-gray-100">
     <div class="container mx-auto m-20 p-10 bg-white shadow-lg rounded-lg">
       <nav class="mb-6">
+        <% if (userRole === 'Educator') { %>
         <a
           href="/Educator_dashboard"
           class="text-blue-600 underline hover:text-blue-800 font-semibold text-lg">
           Educator Dashboard >
         </a>
+        <% } else if (userRole === 'Learner') { %>
+        <a
+          href="/Learner_dashboard"
+          class="text-blue-600 underline hover:text-blue-800 font-semibold text-lg">
+          Learner Dashboard >
+        </a>
+        <% } %>
       </nav>
-       <div class="mb-6">
+
+      <div class="mb-6">
         <%- include('header.ejs') %>
       </div>
 
       <div class="flex items-center justify-between p-6 bg-gray-50 rounded-lg">
         <div>
-          <h1
-            class="text-blue-600 hover:text-blue-800 font-semibold text-lg">
+          <h1 class="text-blue-600 hover:text-blue-800 font-semibold text-lg">
             <%= viewcourses.name %>
-          </a>
+          </h1>
         </div>
+
+        <!-- Action Buttons Based on User Role -->
         <div class="flex space-x-4">
+          <% if (userRole === 'Educator') { %>
           <a href="#" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">Edit</a>
           <a href="#" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700">Delete</a>
+          <% } else if (userRole === 'Learner') { %>
+          <a href="/enroll/" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700">Enroll</a>
+          <% } %>
         </div>
       </div>
 
-      <hr class="my-6 border-black" />
-
+      <!-- Chapters Section -->
       <div class="mb-4">
-        <a href="/viewcourse/<%= viewcourses.id %>/chapters/newchapter" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Create a new chapter</a>
-        <h2 class="underline text-2xl font-semibold m-2 mb-4">Chapters</h2>
+        <% if (userRole === 'Educator') { %>
+        <a href="/viewcourse/<%= viewcourses.id %>/chapters/newchapter" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 ml-4">Create a new chapter</a>
+        <% } %>
+        <h2 class="underline text-2xl font-semibold m-2 mb-4 ml-4">Chapters</h2>
       </div>
-      <div>
+
+      <!-- Chapter List -->
+      <div class="ml-4"> 
         <% if (chapters.length === 0) { %>
-    <p class="text-gray-500">There is no chapter available.</p>
-  <% } else { %>
+        <p class="text-gray-500">There is no chapter available.</p>
+        <% } else { %>
         <ul>
           <% chapters.forEach(chapter => { %>
-            <li class="bg-white shadow-lg rounded-lg p-6 transition transform hover:scale-105 duration-300">
-              <h3 class="text-2xl font-bold text-gray-800 mb-2"><%= chapter.title %></h3>
-              <p class="text-gray-600 mb-4">Description: <%= chapter.description %></p>
-              <div class="flex justify-between space-x-2">
-                <a href="/viewcourse/<%= viewcourses.id %>/chapters/<%= chapter.id %>/content" class="bg-blue-500 text-white w-full font-medium px-4 py-2 rounded-md hover:bg-blue-600 mr-2 text-center">View Chapter</a>
-                 <a href="/viewcourse/<%= viewcourses.id %>/chapters/<%= chapter.id %>/addcontent" class="bg-green-500 text-white w-full font-medium px-4 py-2 rounded-md hover:bg-green-600 text-center">Add content</a>
-                <a href="/viewcourse/<%= viewcourses.id %>/chapters/<%= chapter.id %>/edit" class="bg-green-500 text-white w-full font-medium px-4 py-2 rounded-md hover:bg-green-600 text-center">Edit</a>
-              </div>
-            </li>
+          <li class="bg-white shadow-lg rounded-lg p-6 transition transform hover:scale-105 duration-300 m-2">
+            <div class="flex ml-2">
+            <h3 class="text-2xl font-bold text-gray-800 mb-2"><%= chapter.title %></h3>
+             <% if (userRole === 'Learner') { %>
+             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 ml-2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+          </svg>
+               <% } %>
+          </div>
+            <p class="text-gray-600 mb-4">Description: <%= chapter.description %></p>
+            <div class="flex justify-between space-x-2">
+              <a href="/viewcourse/<%= viewcourses.id %>/chapters/<%= chapter.id %>/content" class="bg-blue-500 text-white w-full font-medium px-4 py-2 rounded-md hover:bg-blue-600 mr-2 text-center">View Chapter</a>
+              
+              <!-- Educator's Additional Options -->
+              <% if (userRole === 'Educator') { %>
+              <a href="/viewcourse/<%= viewcourses.id %>/chapters/<%= chapter.id %>/addcontent" class="bg-green-500 text-white w-full font-medium px-4 py-2 rounded-md hover:bg-green-600 text-center">Add content</a>
+              <a href="/viewcourse/<%= viewcourses.id %>/chapters/<%= chapter.id %>/edit" class="bg-green-500 text-white w-full font-medium px-4 py-2 rounded-md hover:bg-green-600 text-center">Edit</a>
+              <% } %>
+            </div>
+          </li>
           <% }) %>
         </ul>
-          <% } %>
+        <% } %>
       </div>
     </div>
   </body>

@@ -10,6 +10,10 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       Course.belongsTo(models.User, { foreignKey: "educatorId" });
+      Course.hasMany(models.enrollCourse, {
+        foreignKey: "courseId",
+        as: "enrollments",
+      });
     }
     static getCourseByEducatorId() {
       return Course.findAll();

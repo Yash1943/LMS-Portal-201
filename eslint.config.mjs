@@ -15,7 +15,7 @@ export default [
   { languageOptions: { globals: globals.browser } },
   pluginJs.configs.recommended,
   {
-    files: ["__tests__/"],
+    files: ["__tests__/LMS.js"],
     plugins: { jest: pluginJest },
     languageOptions: { globals: globals.jest },
     rules: pluginJest.configs.recommended.rules,

@@ -2,20 +2,23 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("markAsCompletions", {
+    await queryInterface.createTable("enrollCourses", {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      chapetPageId: {
-        type: Sequelize.INTEGER,
-      },
       LearnerId: {
         type: Sequelize.INTEGER,
       },
-      markAsComple: {
+      courseId: {
+        type: Sequelize.INTEGER,
+      },
+      progressOfCourse: {
+        type: Sequelize.INTEGER,
+      },
+      enrollStatus: {
         type: Sequelize.BOOLEAN,
       },
       createdAt: {
@@ -28,7 +31,8 @@ module.exports = {
       },
     });
   },
+  // eslint-disable-next-line no-unused-vars
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("markAsCompletions");
+    await queryInterface.dropTable("enrollCourses");
   },
 };

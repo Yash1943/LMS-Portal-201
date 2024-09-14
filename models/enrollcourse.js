@@ -1,7 +1,7 @@
 "use strict";
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
-  class markAsCompletion extends Model {
+  class enrollCourse extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -9,18 +9,23 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      enrollCourse.belongsTo(models.Course, {
+        foreignKey: "courseId",
+        as: "course",
+      });
     }
   }
-  markAsCompletion.init(
+  enrollCourse.init(
     {
-      chapetPageId: DataTypes.INTEGER,
       LearnerId: DataTypes.INTEGER,
-      markAsComple: DataTypes.BOOLEAN,
+      courseId: DataTypes.INTEGER,
+      progressOfCourse: DataTypes.INTEGER,
+      enrollStatus: DataTypes.BOOLEAN,
     },
     {
       sequelize,
-      modelName: "markAsCompletion",
+      modelName: "enrollCourse",
     },
   );
-  return markAsCompletion;
+  return enrollCourse;
 };

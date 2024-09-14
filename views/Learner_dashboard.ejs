@@ -24,6 +24,20 @@
         <h2 class="ml-7 text-xl">
           The Following courses are available.Pick what you would like to learn today
         </h2>
+         <% if (isEnrolled) { %>
+          <h3 class="text-2xl font-semibold text-gray-700 mb-4">Your Enrolled Courses:</h3>
+          <ul id="courseList" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <% enrollments.forEach(enrollment => { %>
+              <li class="bg-white shadow-lg rounded-lg p-6 transition transform hover:scale-105 duration-300">
+                <h4 class="text-xl font-bold"><%= enrollment.course.name %></h4>
+                <p class="text-gray-700"><%= enrollment.course.description %></p>
+                <a href="/viewcourse/<%= enrollment.course.id %>" class="text-blue-500 hover:underline">View Course</a>
+              </li>
+            <% }) %>
+          </ul>
+        <% } else { %>
+          <p class="text-gray-500">You are not enrolled in any courses yet.</p>
+        <% } %>
       </div>
     </div>
     <div class="max-w-7xl mx-auto">

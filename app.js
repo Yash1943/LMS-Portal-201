@@ -34,7 +34,7 @@ app.use(
     cookie: {
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
-  })
+  }),
 );
 
 app.use(passport.initialize());
@@ -63,8 +63,8 @@ passport.use(
         .catch((error) => {
           return done(error);
         });
-    }
-  )
+    },
+  ),
 );
 
 passport.serializeUser((user, done) => {
@@ -91,7 +91,13 @@ const requireRoles = (roles) => {
     }
   };
 };
-const { User, Course, Chapter, ChapterPages } = require("./models");
+const {
+  User,
+  Course,
+  Chapter,
+  ChapterPages,
+  enrollCourse,
+} = require("./models");
 
 app.get("/", (req, res) => {
   res.render("index", { title: "LMS Portal", csrfToken: req.csrfToken() });
@@ -141,7 +147,7 @@ app.post(
       console.error("Error during role assignment:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 app.get("/Educator_dashboard", requireRoles(["Educator"]), async (req, res) => {
@@ -180,6 +186,14 @@ app.get(
     try {
       const userId = req.user.id;
       const userRole = req.user.role;
+      const learnerId = req.user.id;
+
+      const enrollments = await enrollCourse.findAll({
+        where: { LearnerId: learnerId },
+        include: [{ model: Course, as: "course" }],
+      });
+
+      const isEnrolled = enrollments.length > 0;
 
       // console.log("userRole", userRole);
       const user = await User.findOne({ where: { id: userId } });
@@ -191,6 +205,8 @@ app.get(
           user,
           userRole,
           viewcourses,
+          isEnrolled, // Pass the enrollment status to the template
+          enrollments, // Pass the list of enrollments to the template
         });
       } else {
         res.json({ name });
@@ -198,7 +214,7 @@ app.get(
     } catch (error) {
       console.log(error);
     }
-  }
+  },
 );
 
 app.post("/users", async (req, res) => {
@@ -228,7 +244,7 @@ app.get(
       title: "Create Course",
       csrfToken: req.csrfToken(),
     });
-  }
+  },
 );
 
 app.post("/createCourse", async (req, res) => {
@@ -248,40 +264,53 @@ app.post("/createCourse", async (req, res) => {
   }
 });
 
-app.get("/viewcourse/:id", requireRoles(["Educator","Learner"]), async (req, res) => {
-  try {
-    courseId = req.params.id;
-    console.log("courseId", courseId);
-    const viewcourses = await Course.findOne({ where: { id: courseId } });
-    const chapters = await Chapter.findAll({ where: { courseId: courseId } });
-    console.log("chapters: ", chapters);
-    const userRole = req.user.role;
-    // console.log("viewcourses", viewcourses);
-    if (req.accepts("html")) {
-      res.render("Chepter", {
-        title: "Create Chepter",
-        csrfToken: req.csrfToken(),
-        viewcourses,
-        chapters,
-        userRole,
+app.get(
+  "/viewcourse/:id",
+  requireRoles(["Educator", "Learner"]),
+  async (req, res) => {
+    try {
+      courseId = req.params.id;
+      const learnerId = req.user.id;
+      console.log("courseId", courseId);
+      const existingEnrollment = await enrollCourse.findOne({
+        where: { LearnerId: learnerId, courseId: courseId },
       });
-    } else {
-      res.json({ viewcourses });
+      const viewcourses = await Course.findOne({ where: { id: courseId } });
+      const chapters = await Chapter.findAll({ where: { courseId: courseId } });
+      console.log("chapters: ", chapters);
+      const userRole = req.user.role;
+      // console.log("viewcourses", viewcourses);
+      if (req.accepts("html")) {
+        res.render("Chepter", {
+          title: "Create Chepter",
+          csrfToken: req.csrfToken(),
+          viewcourses,
+          chapters,
+          userRole,
+          existingEnrollment,
+        });
+      } else {
+        res.json({ viewcourses });
+      }
+    } catch (error) {
+      console.log(error);
     }
-  } catch (error) {
-    console.log(error);
-  }
-});
+  },
+);
 
-app.get("/viewcourse/:id/chapters/newchapter", requireRoles(["Educator"]), async (req, res) => {
-  courseID = req.params.id;
-  console.log("courseId", courseID);
-  res.render("newChepter", {
-    title: "Create Chepter",
-    courseID,
-    csrfToken: req.csrfToken(),
-  });
-});
+app.get(
+  "/viewcourse/:id/chapters/newchapter",
+  requireRoles(["Educator"]),
+  async (req, res) => {
+    courseID = req.params.id;
+    console.log("courseId", courseID);
+    res.render("newChepter", {
+      title: "Create Chepter",
+      courseID,
+      csrfToken: req.csrfToken(),
+    });
+  },
+);
 
 app.post(
   "/viewcourse/:courseID/chapters/newchapter",
@@ -300,7 +329,7 @@ app.post(
     } catch (error) {
       console.log(error);
     }
-  }
+  },
 );
 
 app.get(
@@ -332,7 +361,7 @@ app.get(
       console.error("Error fetching course or chapter details:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 app.post(
@@ -353,12 +382,12 @@ app.post(
       console.error("Error adding content:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 app.get(
   "/viewcourse/:courseId/chapters/:chapterId/content",
-  requireRoles(["Educator"]),
+  requireRoles(["Educator", "Learner"]),
   async (req, res) => {
     try {
       const { courseId, chapterId } = req.params;
@@ -389,7 +418,41 @@ app.get(
       console.error("Error fetching content:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
+);
+
+app.post(
+  "/enroll/:courseId",
+  connectEnsureLogin.ensureLoggedIn(),
+  requireRoles(["Learner"]),
+  async (req, res) => {
+    try {
+      const courseId = req.params.courseId;
+      const learnerId = req.user.id;
+
+      // Check if the learner is already enrolled in the course
+      const existingEnrollment = await enrollCourse.findOne({
+        where: { LearnerId: learnerId, courseId: courseId },
+      });
+      console.log("existingEnrollment", existingEnrollment);
+      if (existingEnrollment) {
+        return res
+          .status(400)
+          .json({ message: "You are already enrolled in this course." });
+      }
+      await enrollCourse.create({
+        LearnerId: learnerId,
+        courseId: courseId,
+        progressOfCourse: 0,
+        enrollStatus: true,
+      });
+
+      res.redirect(`/viewcourse/${courseId}`);
+    } catch (error) {
+      console.error("Error enrolling in course:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
 );
 
 module.exports = app;

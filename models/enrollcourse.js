@@ -14,6 +14,18 @@ module.exports = (sequelize, DataTypes) => {
         as: "course",
       });
     }
+    static async findEnrollmentByLearnerIdAndCourseId(learnerId, courseId) {
+      return await enrollCourse.findOne({ where: { LearnerId: learnerId, courseId: courseId } });
+    }
+
+    static async createEnrollment(learnerId, courseId) {
+      return await enrollCourse.create({
+        LearnerId: learnerId,
+        courseId: courseId,
+        progressOfCourse: 0,
+        enrollStatus: true,
+      });
+    }
   }
   enrollCourse.init(
     {
@@ -25,7 +37,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: "enrollCourse",
-    },
+    }
   );
   return enrollCourse;
 };

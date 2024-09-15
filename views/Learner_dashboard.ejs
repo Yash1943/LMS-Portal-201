@@ -29,9 +29,9 @@
           <ul id="courseList" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             <% enrollments.forEach(enrollment => { %>
               <li class="bg-white shadow-lg rounded-lg p-6 transition transform hover:scale-105 duration-300">
-                <h4 class="text-xl font-bold"><%= enrollment.course.name %></h4>
-                <p class="text-gray-700"><%= enrollment.course.description %></p>
-                <a href="/viewcourse/<%= enrollment.course.id %>" class="text-blue-500 hover:underline">View Course</a>
+                <h4 id="courseSelect" class="text-xl font-bold"><%= enrollment.course.name %></h4>
+                <p id="courseSelect" class="text-gray-700"><%= enrollment.course.description %></p>
+                <a href="/viewcourse/<%= enrollment.course.id %>" id="courseSelect" class="text-blue-500 hover:underline">View Course</a>
               </li>
             <% }) %>
           </ul>

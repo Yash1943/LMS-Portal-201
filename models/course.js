@@ -18,6 +18,13 @@ module.exports = (sequelize, DataTypes) => {
     static getCourseByEducatorId() {
       return Course.findAll();
     }
+    static async findCourseById(courseId) {
+      return await Course.findOne({ where: { id: courseId } });
+    }
+
+    static async getAllCourses() {
+      return await Course.findAll();
+    }
   }
   Course.init(
     {
@@ -29,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: "Course",
-    },
+    }
   );
   return Course;
 };

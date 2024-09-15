@@ -87,6 +87,7 @@
               <% } %>
               <!-- Educator's Additional Options -->
               <% if (userRole === 'Educator') { %>
+                <a href="/viewcourse/<%= viewcourses.id %>/chapters/<%= chapter.id %>/content" class="bg-blue-500 text-white w-full font-medium px-4 py-2 rounded-md hover:bg-blue-600 mr-2 text-center">View Chapter</a>
               <a href="/viewcourse/<%= viewcourses.id %>/chapters/<%= chapter.id %>/addcontent" class="bg-green-500 text-white w-full font-medium px-4 py-2 rounded-md hover:bg-green-600 text-center">Add content</a>
               <a href="/viewcourse/<%= viewcourses.id %>/chapters/<%= chapter.id %>/edit" class="bg-green-500 text-white w-full font-medium px-4 py-2 rounded-md hover:bg-green-600 text-center">Edit</a>
               <% } %>

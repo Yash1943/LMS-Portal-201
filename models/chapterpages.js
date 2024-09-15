@@ -11,6 +11,24 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
+    static async getChapterPagesByChapterId(chapterId) {
+      return await ChapterPages.findAll({ where: { chapterID: chapterId } });
+    }
+
+    static async getChapterPageById(pageId) {
+      return await ChapterPages.findOne({ where: { id: pageId } });
+    }
+
+    static async createChapterPage(title, description, chapterID) {
+      return await ChapterPages.create({ title, description, chapterID });
+    }
+    static async updateChapterPage(pageId, title, description) {
+      return await ChapterPages.update({ title, description }, { where: { id: pageId } });
+    }
+
+    static async deleteChapterPage(pageId) {
+      return await ChapterPages.destroy({ where: { id: pageId } });
+    }
   }
   ChapterPages.init(
     {
@@ -21,7 +39,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: "ChapterPages",
-    },
+    }
   );
   return ChapterPages;
 };

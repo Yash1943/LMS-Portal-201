@@ -11,6 +11,17 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       User.hasMany(models.Course, { foreignKey: "educatorId" });
     }
+    static async findByEmail(email) {
+      return await this.findOne({ where: { email } });
+    }
+
+    static async findById(id) {
+      return await this.findByPk(id);
+    }
+
+    static async createUser({ role, name, email, password }) {
+      return await this.create({ role, name, email, password });
+    }
   }
   User.init(
     {
@@ -29,7 +40,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: "User",
-    },
+    }
   );
   return User;
 };

@@ -34,7 +34,7 @@ app.use(
     cookie: {
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
-  }),
+  })
 );
 
 app.use(passport.initialize());
@@ -63,8 +63,8 @@ passport.use(
         .catch((error) => {
           return done(error);
         });
-    },
-  ),
+    }
+  )
 );
 
 passport.serializeUser((user, done) => {
@@ -91,14 +91,7 @@ const requireRoles = (roles) => {
     }
   };
 };
-const {
-  User,
-  Course,
-  Chapter,
-  ChapterPages,
-  enrollCourse,
-  markAsCompletion,
-} = require("./models");
+const { User, Course, Chapter, ChapterPages, enrollCourse, markAsCompletion } = require("./models");
 
 app.get("/", (req, res) => {
   res.render("index", { title: "LMS Portal", csrfToken: req.csrfToken() });
@@ -148,36 +141,41 @@ app.post(
       console.error("Error during role assignment:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
-  },
+  }
 );
 
-app.get("/Educator_dashboard", requireRoles(["Educator"]), async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const userDetail = await User.findOne({ where: { id: userId } });
-    const name = userDetail.name;
-    const Role = userDetail.role;
-    const viewcourses = await Course.getCourseByEducatorId();
-    const userRole = req.user.role;
-    console.log("viewcourses", viewcourses);
-    // console.log("name", userDetail);
-    if (req.accepts("html")) {
-      res.render("Educator_dashboard", {
-        title: "Educator Dashboard",
-        csrfToken: req.csrfToken(),
-        name,
-        Role,
-        userId,
-        viewcourses,
-        userRole,
-      });
-    } else {
-      res.json({ name, Role, userId, viewcourses });
+app.get(
+  "/Educator_dashboard",
+  connectEnsureLogin.ensureLoggedIn(),
+  requireRoles(["Educator"]),
+  async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const userDetail = await User.findOne({ where: { id: userId } });
+      const name = userDetail.name;
+      const Role = userDetail.role;
+      const viewcourses = await Course.getCourseByEducatorId();
+      const userRole = req.user.role;
+      console.log("viewcourses", viewcourses);
+      // console.log("name", userDetail);
+      if (req.accepts("html")) {
+        res.render("Educator_dashboard", {
+          title: "Educator Dashboard",
+          csrfToken: req.csrfToken(),
+          name,
+          Role,
+          userId,
+          viewcourses,
+          userRole,
+        });
+      } else {
+        res.json({ name, Role, userId, viewcourses });
+      }
+    } catch (error) {
+      console.log(error);
     }
-  } catch (error) {
-    console.log(error);
   }
-});
+);
 
 app.get(
   "/Learner_dashboard",
@@ -217,7 +215,7 @@ app.get(
     } catch (error) {
       console.log(error);
     }
-  },
+  }
 );
 
 app.post("/users", async (req, res) => {
@@ -240,17 +238,17 @@ app.post("/users", async (req, res) => {
 
 app.get(
   "/createCourse",
-
+  connectEnsureLogin.ensureLoggedIn(),
   requireRoles(["Educator"]),
   async (req, res) => {
     res.render("createCourse", {
       title: "Create Course",
       csrfToken: req.csrfToken(),
     });
-  },
+  }
 );
 
-app.post("/createCourse", async (req, res) => {
+app.post("/createCourse", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
   console.log("createCourse body:", req.body);
   const EducatorId = req.user.id;
   console.log("EducatorId", EducatorId);
@@ -269,6 +267,7 @@ app.post("/createCourse", async (req, res) => {
 
 app.get(
   "/viewcourse/:id",
+  connectEnsureLogin.ensureLoggedIn(),
   requireRoles(["Educator", "Learner"]),
   async (req, res) => {
     try {
@@ -298,11 +297,12 @@ app.get(
     } catch (error) {
       console.log(error);
     }
-  },
+  }
 );
 
 app.get(
   "/viewcourse/:id/chapters/newchapter",
+  connectEnsureLogin.ensureLoggedIn(),
   requireRoles(["Educator"]),
   async (req, res) => {
     courseID = req.params.id;
@@ -312,11 +312,12 @@ app.get(
       courseID,
       csrfToken: req.csrfToken(),
     });
-  },
+  }
 );
 
 app.post(
   "/viewcourse/:courseID/chapters/newchapter",
+  connectEnsureLogin.ensureLoggedIn(),
   requireRoles(["Educator"]),
   async (req, res) => {
     console.log("newchapter body:", req.body);
@@ -332,11 +333,12 @@ app.post(
     } catch (error) {
       console.log(error);
     }
-  },
+  }
 );
 
 app.get(
   "/viewcourse/:courseId/chapters/:chapterId/addcontent",
+  connectEnsureLogin.ensureLoggedIn(),
   requireRoles(["Educator"]),
   async (req, res) => {
     try {
@@ -364,11 +366,12 @@ app.get(
       console.error("Error fetching course or chapter details:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  },
+  }
 );
 
 app.post(
   "/viewcourse/:courseId/chapters/:chapterId/addcontent",
+  connectEnsureLogin.ensureLoggedIn(),
   requireRoles(["Educator"]),
   async (req, res) => {
     try {
@@ -385,11 +388,12 @@ app.post(
       console.error("Error adding content:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  },
+  }
 );
 
 app.get(
   "/viewcourse/:courseId/chapters/:chapterId/content",
+  connectEnsureLogin.ensureLoggedIn(),
   requireRoles(["Educator", "Learner"]),
   async (req, res) => {
     try {
@@ -433,7 +437,7 @@ app.get(
       console.error("Error fetching content:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  },
+  }
 );
 
 app.post(
@@ -450,9 +454,7 @@ app.post(
       });
       console.log("existingEnrollment", existingEnrollment);
       if (existingEnrollment) {
-        return res
-          .status(400)
-          .json({ message: "You are already enrolled in this course." });
+        return res.status(400).json({ message: "You are already enrolled in this course." });
       }
       await enrollCourse.create({
         LearnerId: learnerId,
@@ -465,11 +467,12 @@ app.post(
       console.error("Error enrolling in course:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  },
+  }
 );
 
 app.post(
   "/viewcourse/:courseId/chapters/:chapterId/content/markAsComplete",
+  connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
     try {
       const { courseId, chapterId } = req.params;
@@ -487,6 +490,6 @@ app.post(
       console.error("Error marking chapter as complete:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  },
+  }
 );
 module.exports = app;

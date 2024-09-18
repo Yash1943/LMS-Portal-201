@@ -1,5 +1,5 @@
 "use strict";
-const { Model } = require("sequelize");
+const { Model, Op } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Chapter extends Model {
     /**
@@ -16,7 +16,9 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     static async getChapterByIdAndCourseId(chapterId, courseId) {
-      return await Chapter.findOne({ where: { id: chapterId, courseId: courseId } });
+      return await Chapter.findOne({
+        where: { id: chapterId, courseId: courseId },
+      });
     }
 
     static async createChapter(title, description, courseId) {
@@ -24,10 +26,22 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     static async updateChapter(chapterId, title, description) {
-      return await Chapter.update({ title, description }, { where: { id: chapterId } });
+      return await Chapter.update(
+        { title, description },
+        { where: { id: chapterId } },
+      );
     }
     static async deleteChapter(chapterId) {
       return await Chapter.destroy({ where: { id: chapterId } });
+    }
+    static async nextChapter(courseId, chapterId) {
+      return await Chapter.findOne({
+        where: {
+          courseId: courseId,
+          id: { [Op.gt]: chapterId },
+        },
+        order: [["id", "ASC"]],
+      });
     }
   }
   Chapter.init(
@@ -39,7 +53,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: "Chapter",
-    }
+    },
   );
   return Chapter;
 };

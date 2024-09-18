@@ -3,19 +3,49 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><% title %></title>
+    <title><%= title %></title>
     <link
       href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
       rel="stylesheet" />
     <meta name="csrf-token" content="<%= csrfToken %>" />
+    <script>
+      var token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        console.log("CSRF Token of viewcontent:", token);
+      function markAsComplete(id) {
+        fetch(`/viewcourse/<%= courseId %>/chapters/${id}/content/markAsComplete`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "CSRF-Token": token // Include the CSRF token in the headers
+          },
+          body: JSON.stringify({ completed: true }),
+        })
+        .then((res) => {
+          if (res.ok) {
+            window.location.reload();
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+      };
+      
+        window.gotoNext = function(nextChapterId) {
+          if (nextChapterId) {
+            window.location.href = `/viewcourse/<%= courseId %>/chapters/${nextChapterId}/content`;
+          } else {
+            alert("No more chapters available.");
+          }
+        };
+    </script>
   </head>
   <body>
     <div class="container mx-auto m-20 p-10 bg-white shadow-lg rounded-lg">
       <nav class="mb-4">
         <a
-          href="/Educator_dashboard"
+          href="/Learner_dashboard"
           class="text-blue-600 underline hover:text-blue-800 font-semibold text-lg">
-          Educator Dashboard >
+          Learner Dashboard >
         </a>
         <a
           href="/viewcourse/<%= courseId %>"
@@ -37,21 +67,26 @@
           <h3 class="text-xl font-bold">Title : <%= item.title %></h3>
           <p class="mt-2">Description : <%= item.description %></p>
         </div>
-
-      </div>
-      <div class="mb-4 flex  justify-between">
-      <button onclick="markAsComplete(<%= item.id %>)" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
-        markAsComplete
-      </button>
-      <button class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">
-        Goto next
-      </button>
-      </div>
-      </div>
         <% }) %>
-      
         <% } %>
+      </div>
+      <div class="mb-4 flex justify-between">
+        <% if (isCompleted) { %>
+          <button class="bg-gray-500 text-white px-4 py-2 rounded-md cursor-not-allowed" disabled>
+            MarkAsCompleted
+          </button>
+        <% } else { %>
+        <form action="/viewcourse/<%= courseId %>/chapters/<%= chapterId %>/content/markAsComplete" method="post">
+           <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
+            MarkAsComplete
+          </button>
+        </form>
+         <% } %>
+        <button class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600" onclick="gotoNext(<%= nextChapter ? nextChapter.id : null %>)">
+          Goto next
+        </button>
+      </div>
     </div>
   </body>
 </html>
-

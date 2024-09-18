@@ -34,7 +34,7 @@ app.use(
     cookie: {
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
-  })
+  }),
 );
 
 app.use(passport.initialize());
@@ -63,8 +63,8 @@ passport.use(
         .catch((error) => {
           return done(error);
         });
-    }
-  )
+    },
+  ),
 );
 
 passport.serializeUser((user, done) => {
@@ -91,7 +91,14 @@ const requireRoles = (roles) => {
     }
   };
 };
-const { User, Course, Chapter, ChapterPages, enrollCourse } = require("./models");
+const {
+  User,
+  Course,
+  Chapter,
+  ChapterPages,
+  enrollCourse,
+  markAsCompletion,
+} = require("./models");
 
 app.get("/", (req, res) => {
   res.render("index", { title: "LMS Portal", csrfToken: req.csrfToken() });
@@ -141,7 +148,7 @@ app.post(
       console.error("Error during role assignment:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 app.get("/Educator_dashboard", requireRoles(["Educator"]), async (req, res) => {
@@ -210,7 +217,7 @@ app.get(
     } catch (error) {
       console.log(error);
     }
-  }
+  },
 );
 
 app.post("/users", async (req, res) => {
@@ -240,7 +247,7 @@ app.get(
       title: "Create Course",
       csrfToken: req.csrfToken(),
     });
-  }
+  },
 );
 
 app.post("/createCourse", async (req, res) => {
@@ -260,45 +267,53 @@ app.post("/createCourse", async (req, res) => {
   }
 });
 
-app.get("/viewcourse/:id", requireRoles(["Educator", "Learner"]), async (req, res) => {
-  try {
-    courseId = req.params.id;
-    const learnerId = req.user.id;
-    console.log("courseId", courseId);
-    const existingEnrollment = await enrollCourse.findOne({
-      where: { LearnerId: learnerId, courseId: courseId },
-    });
-    const viewcourses = await Course.findOne({ where: { id: courseId } });
-    const chapters = await Chapter.findAll({ where: { courseId: courseId } });
-    console.log("chapters: ", chapters);
-    const userRole = req.user.role;
-    // console.log("viewcourses", viewcourses);
-    if (req.accepts("html")) {
-      res.render("Chepter", {
-        title: "Create Chepter",
-        csrfToken: req.csrfToken(),
-        viewcourses,
-        chapters,
-        userRole,
-        existingEnrollment,
+app.get(
+  "/viewcourse/:id",
+  requireRoles(["Educator", "Learner"]),
+  async (req, res) => {
+    try {
+      courseId = req.params.id;
+      const learnerId = req.user.id;
+      console.log("courseId", courseId);
+      const existingEnrollment = await enrollCourse.findOne({
+        where: { LearnerId: learnerId, courseId: courseId },
       });
-    } else {
-      res.json({ viewcourses });
+      const viewcourses = await Course.findOne({ where: { id: courseId } });
+      const chapters = await Chapter.findAll({ where: { courseId: courseId } });
+      console.log("chapters: ", chapters);
+      const userRole = req.user.role;
+      // console.log("viewcourses", viewcourses);
+      if (req.accepts("html")) {
+        res.render("Chepter", {
+          title: "Create Chepter",
+          csrfToken: req.csrfToken(),
+          viewcourses,
+          chapters,
+          userRole,
+          existingEnrollment,
+        });
+      } else {
+        res.json({ viewcourses });
+      }
+    } catch (error) {
+      console.log(error);
     }
-  } catch (error) {
-    console.log(error);
-  }
-});
+  },
+);
 
-app.get("/viewcourse/:id/chapters/newchapter", requireRoles(["Educator"]), async (req, res) => {
-  courseID = req.params.id;
-  console.log("courseId", courseID);
-  res.render("newChepter", {
-    title: "Create Chepter",
-    courseID,
-    csrfToken: req.csrfToken(),
-  });
-});
+app.get(
+  "/viewcourse/:id/chapters/newchapter",
+  requireRoles(["Educator"]),
+  async (req, res) => {
+    courseID = req.params.id;
+    console.log("courseId", courseID);
+    res.render("newChepter", {
+      title: "Create Chepter",
+      courseID,
+      csrfToken: req.csrfToken(),
+    });
+  },
+);
 
 app.post(
   "/viewcourse/:courseID/chapters/newchapter",
@@ -317,7 +332,7 @@ app.post(
     } catch (error) {
       console.log(error);
     }
-  }
+  },
 );
 
 app.get(
@@ -338,7 +353,7 @@ app.get(
         return res.status(404).json({ error: "Course or Chapter not found" });
       }
 
-      res.render("addContent", {
+      res.render("addcontent", {
         title: "Add Content",
         csrfToken: req.csrfToken(),
         course,
@@ -349,7 +364,7 @@ app.get(
       console.error("Error fetching course or chapter details:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 app.post(
@@ -370,7 +385,7 @@ app.post(
       console.error("Error adding content:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 app.get(
@@ -379,15 +394,28 @@ app.get(
   async (req, res) => {
     try {
       const { courseId, chapterId } = req.params;
+      learnerId = req.user.id;
       const course = await Course.findOne({ where: { id: courseId } });
       const chapter = await Chapter.findOne({
         where: { id: chapterId, courseId: courseId },
       });
-      // console.log("course", course);
       const content = await ChapterPages.findAll({
         where: { chapterID: chapterId },
       });
-      console.log("content", content);
+      const completion = await markAsCompletion.findOne({
+        where: {
+          chapetPageId: chapterId,
+          LearnerId: learnerId,
+          markAsComple: true,
+        },
+      });
+      // console.log("completion", completion);
+      const isCompleted = !!completion;
+      // console.log("isCompleted", isCompleted);
+      // console.log("CSRF Token of get:", req.csrfToken());
+      const nextChapter = await Chapter.nextChapter(courseId, chapterId);
+      console.log("nextChapter", nextChapter);
+
       if (req.accepts("html")) {
         res.render("viewContent", {
           title: "View Content",
@@ -397,13 +425,15 @@ app.get(
           content,
           chapterId,
           courseId,
+          isCompleted,
+          nextChapter,
         });
       }
     } catch (error) {
       console.error("Error fetching content:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 app.post(
@@ -420,7 +450,9 @@ app.post(
       });
       console.log("existingEnrollment", existingEnrollment);
       if (existingEnrollment) {
-        return res.status(400).json({ message: "You are already enrolled in this course." });
+        return res
+          .status(400)
+          .json({ message: "You are already enrolled in this course." });
       }
       await enrollCourse.create({
         LearnerId: learnerId,
@@ -433,11 +465,28 @@ app.post(
       console.error("Error enrolling in course:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
-app.put("/viewcourse/:courseId/chapters/:chapterId/content/markAsComplete", async (req, res) => {
+app.post(
+  "/viewcourse/:courseId/chapters/:chapterId/content/markAsComplete",
+  async (req, res) => {
+    try {
+      const { courseId, chapterId } = req.params;
+      const learnerId = req.user.id;
 
-})
-
+      // Update the markAsCompletion model
+      await markAsCompletion.create({
+        chapetPageId: chapterId,
+        LearnerId: learnerId,
+        markAsComple: true,
+      });
+      res.redirect(`/viewcourse/${courseId}/chapters/${chapterId}/content`);
+      // res.status(200).json({ message: "Chapter marked as complete" });
+    } catch (error) {
+      console.error("Error marking chapter as complete:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+);
 module.exports = app;

@@ -23,7 +23,10 @@ module.exports = (sequelize, DataTypes) => {
       return await ChapterPages.create({ title, description, chapterID });
     }
     static async updateChapterPage(pageId, title, description) {
-      return await ChapterPages.update({ title, description }, { where: { id: pageId } });
+      return await ChapterPages.update(
+        { title, description },
+        { where: { id: pageId } },
+      );
     }
 
     static async deleteChapterPage(pageId) {
@@ -39,7 +42,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: "ChapterPages",
-    }
+    },
   );
   return ChapterPages;
 };

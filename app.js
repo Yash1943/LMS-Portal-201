@@ -122,35 +122,6 @@ app.get("/signout", async (request, response, next) => {
   });
 });
 
-app.post(
-  "/Roleassign",
-  passport.authenticate("local", {
-    failureRedirect: "/login",
-  }),
-  async (req, res) => {
-    try {
-      const user = await User.findOne({ where: { email: req.user.email } });
-      if (!user) {
-        return res.redirect("/login");
-      }
-
-      const role = user.role;
-      console.log("Roleassign : ", role);
-
-      if (role === "Educator") {
-        return res.redirect("/Educator_dashboard");
-      } else if (role === "Learner") {
-        return res.redirect("/Learner_dashboard");
-      } else {
-        return res.redirect("/login");
-      }
-    } catch (error) {
-      console.error("Error during role assignment:", error);
-      return res.status(500).json({ error: "Internal server error" });
-    }
-  },
-);
-
 app.get(
   "/Educator_dashboard",
   connectEnsureLogin.ensureLoggedIn(),
@@ -225,24 +196,6 @@ app.get(
   },
 );
 
-app.post("/users", async (req, res) => {
-  const hashedpwd = await bcrypt.hash(req.body.password, saltRound);
-  console.log("hashpass", hashedpwd);
-  try {
-    await User.create({
-      role: req.body.role,
-      name: req.body.name,
-      email: req.body.email,
-      password: hashedpwd,
-    });
-    // console.log(user);
-    return res.redirect("/login");
-  } catch (error) {
-    console.log(error);
-  }
-  res.redirect("/");
-});
-
 app.get(
   "/createCourse",
   connectEnsureLogin.ensureLoggedIn(),
@@ -260,28 +213,6 @@ app.get(
     } catch (error) {
       res.status(500).json({ error: "Internal server error" });
       console.log(error);
-    }
-  },
-);
-
-app.post(
-  "/createCourse",
-  connectEnsureLogin.ensureLoggedIn(),
-  async (req, res) => {
-    console.log("createCourse body:", req.body);
-    const EducatorId = req.user.id;
-    console.log("EducatorId", EducatorId);
-    try {
-      await Course.create({
-        name: req.body.courseName,
-        description: req.body.courseDescription,
-        educatorId: req.user.id,
-        educatorName: req.user.name,
-      });
-      return res.redirect("/Educator_dashboard");
-    } catch (error) {
-      console.log("Error creating course:", error);
-      return res.status(500).json({ error: "Internal server error" });
     }
   },
 );
@@ -336,27 +267,6 @@ app.get(
   },
 );
 
-app.post(
-  "/viewcourse/:courseID/chapters/newchapter",
-  connectEnsureLogin.ensureLoggedIn(),
-  requireRoles(["Educator"]),
-  async (req, res) => {
-    console.log("newchapter body:", req.body);
-    const courseId = req.params.courseID;
-    console.log("courseId", courseId);
-    try {
-      await Chapter.create({
-        title: req.body.chapterName,
-        description: req.body.description,
-        courseId: courseId,
-      });
-      return res.redirect(`/viewcourse/${courseId}`);
-    } catch (error) {
-      console.log(error);
-    }
-  },
-);
-
 app.get(
   "/viewcourse/:courseId/chapters/:chapterId/addcontent",
   connectEnsureLogin.ensureLoggedIn(),
@@ -385,29 +295,6 @@ app.get(
       });
     } catch (error) {
       console.error("Error fetching course or chapter details:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  },
-);
-
-app.post(
-  "/viewcourse/:courseId/chapters/:chapterId/addcontent",
-  connectEnsureLogin.ensureLoggedIn(),
-  requireRoles(["Educator"]),
-  async (req, res) => {
-    try {
-      // console.log("contentDescription :", req.body);
-      // console.log("chapterID", req.body.chapterSelect);
-      console.log("CSRF addcontent POST TOKEN:", req.csrfToken());
-      const courseId = req.params.courseId;
-      await ChapterPages.create({
-        title: req.body.contentTitle,
-        chapterID: req.body.chapterSelect,
-        description: req.body.contentDescription,
-      });
-      res.redirect(`/viewcourse/${courseId}`);
-    } catch (error) {
-      console.error("Error adding content:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   },
@@ -459,6 +346,119 @@ app.get(
       }
     } catch (error) {
       console.error("Error fetching content:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+);
+
+app.post(
+  "/Roleassign",
+  passport.authenticate("local", {
+    failureRedirect: "/login",
+  }),
+  async (req, res) => {
+    try {
+      const user = await User.findOne({ where: { email: req.user.email } });
+      if (!user) {
+        return res.redirect("/login");
+      }
+
+      const role = user.role;
+      console.log("Roleassign : ", role);
+
+      if (role === "Educator") {
+        return res.redirect("/Educator_dashboard");
+      } else if (role === "Learner") {
+        return res.redirect("/Learner_dashboard");
+      } else {
+        return res.redirect("/login");
+      }
+    } catch (error) {
+      console.error("Error during role assignment:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  },
+);
+
+app.post("/users", async (req, res) => {
+  const hashedpwd = await bcrypt.hash(req.body.password, saltRound);
+  console.log("hashpass", hashedpwd);
+  try {
+    await User.create({
+      role: req.body.role,
+      name: req.body.name,
+      email: req.body.email,
+      password: hashedpwd,
+    });
+    // console.log(user);
+    return res.redirect("/login");
+  } catch (error) {
+    console.log(error);
+  }
+  res.redirect("/");
+});
+
+app.post(
+  "/createCourse",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    console.log("createCourse body:", req.body);
+    const EducatorId = req.user.id;
+    console.log("EducatorId", EducatorId);
+    try {
+      await Course.create({
+        name: req.body.courseName,
+        description: req.body.courseDescription,
+        educatorId: req.user.id,
+        educatorName: req.user.name,
+      });
+      return res.redirect("/Educator_dashboard");
+    } catch (error) {
+      console.log("Error creating course:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  },
+);
+
+app.post(
+  "/viewcourse/:courseID/chapters/newchapter",
+  connectEnsureLogin.ensureLoggedIn(),
+  requireRoles(["Educator"]),
+  async (req, res) => {
+    console.log("newchapter body:", req.body);
+    const courseId = req.params.courseID;
+    console.log("courseId", courseId);
+    try {
+      await Chapter.create({
+        title: req.body.chapterName,
+        description: req.body.description,
+        courseId: courseId,
+      });
+      return res.redirect(`/viewcourse/${courseId}`);
+    } catch (error) {
+      console.log(error);
+    }
+  },
+);
+
+app.post(
+  "/viewcourse/:courseId/chapters/:chapterId/addcontent",
+  connectEnsureLogin.ensureLoggedIn(),
+  requireRoles(["Educator"]),
+  async (req, res) => {
+    try {
+      // console.log("contentDescription :", req.body);
+      // console.log("chapterID", req.body.chapterSelect);
+      console.log("CSRF addcontent POST TOKEN:", req.csrfToken());
+      const courseId = req.params.courseId;
+      await ChapterPages.create({
+        title: req.body.contentTitle,
+        chapterID: req.body.chapterSelect,
+        description: req.body.contentDescription,
+      });
+      res.redirect(`/viewcourse/${courseId}`);
+    } catch (error) {
+      console.error("Error adding content:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   },
@@ -518,4 +518,5 @@ app.post(
     }
   },
 );
+
 module.exports = app;

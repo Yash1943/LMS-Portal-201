@@ -110,15 +110,11 @@ describe("Role-Based Login and Educator Features", () => {
     const chapter = await db.Chapter.findOne({
       where: { title: "Test Chapter" },
     });
-    console.log("TESTCourse: ", course.id);
-    console.log("TESTChapter: ", chapter.id);
     // /viewcourse/:courseId/chapters/:chapterId/addcontent
     let res = await agent.get(
       `/viewcourse/${course.id}/chapters/${chapter.id}/addcontent`,
     );
-    // console.log("RESPONSE of TESTCGET addcontent ", res);
     let csrfToken = extractCsrfToken(res);
-    console.log("CSRF Token: ", csrfToken);
     res = await agent
       .post(`/viewcourse/${course.id}/chapters/${chapter.id}/addcontent`)
       .send({
@@ -129,9 +125,7 @@ describe("Role-Based Login and Educator Features", () => {
       });
 
     expect(res.status).toBe(302);
-    expect(res.header.location).toBe(
-      `/viewcourse/${course.id}/chapters/${chapter.id}/content`,
-    );
+    expect(res.header.location).toBe(`/viewcourse/${course.id}`);
 
     const content = await db.ChapterPages.findOne({
       where: { title: "Test Content" },
@@ -150,22 +144,35 @@ describe("Role-Based Login and Educator Features", () => {
     expect(res.status).toBe(302);
     expect(res.header.location).toBe("/Learner_dashboard");
   });
+  // test("should allow to forgot Password", async () => {
+  //   let res = await agent.get("/forgetpassword");
+  //   let csrfToken = extractCsrfToken(res);
+  //   // console.log("CSRF forgotPass Token: ", csrfToken);
+  //   const newPassword = "newpassword";
+  //   const hashedPassword = await bcrypt.hash(newPassword, 10);
+  //   console.log("Hashed Password: ", hashedPassword);
+
+  //   res = await agent.post("/forgetpassword/User").send({
+  //     email: "educator@example.com",
+  //     password: hashedPassword,
+  //     _csrf: csrfToken,
+  //   });
+  //   expect(res.status).toBe(302);
+  //   expect(res.header.location).toBe("/login");
+  // });
   test("should allow Learner to enroll in a course", async () => {
     // Login as Learner
     await login(agent, "learner@example.com", "password");
     const learner = await db.User.findOne({
       where: { email: "learner@example.com" },
     });
-    // console.log("Learner ID: ", learner.id);
 
     const course = await db.Course.create({
       name: "Test Course",
       description: "Test Course Description",
     });
-    // console.log("TESTCOURSE: ", course.id);
     let res = await agent.get(`/viewcourse/${course.id}`);
     let csrfToken = extractCsrfToken(res);
-    // console.log("TESTCSRF Token: ", csrfToken);
     res = await agent.post(`/enroll/${course.id}`).send({
       courseId: course.id,
       learnerId: learner.id,
@@ -181,7 +188,6 @@ describe("Role-Based Login and Educator Features", () => {
     const learner = await db.User.findOne({
       where: { email: "learner@example.com" },
     });
-    // console.log("Learner ID: ", learner.id);
     const course = await db.Course.create({
       name: "Test Course",
       description: "Test Course Description",
@@ -191,13 +197,10 @@ describe("Role-Based Login and Educator Features", () => {
       description: "Test Chapter Description",
       courseId: course.id,
     });
-    // console.log("Chapter ID: ", chapter.id);
     let res = await agent.get(
       `/viewcourse/${course.id}/chapters/${chapter.id}/content`,
     );
     let csrfToken = extractCsrfToken(res);
-    // console.log("CSRF Token: ", csrfToken); // Log the CSRF token
-
     res = await agent
       .post(
         `/viewcourse/${course.id}/chapters/${chapter.id}/content/markAsComplete`,

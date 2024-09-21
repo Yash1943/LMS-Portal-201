@@ -6,7 +6,7 @@ const app = express();
 var csurf = require("tiny-csrf");
 var cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser"); //for Read the post req of the body
-// const flash = require("connect-flash"); // for flash massages
+const flash = require("connect-flash"); // for flash massages
 const path = require("path");
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: false })); //for understanding the url data
@@ -27,6 +27,8 @@ const saltRound = 10;
 app.set("view engine", "ejs"); // for EJS rendering
 app.use(express.static(path.join(__dirname + "public"))); // for static files
 app.set("views", path.join(__dirname, "views"));
+
+app.use(flash());
 
 app.use(
   session({
@@ -82,6 +84,10 @@ passport.deserializeUser((id, done) => {
     });
 });
 
+app.use(function (request, response, next) {
+  response.locals.messages = request.flash();
+  next();
+});
 const requireRoles = (roles) => {
   return (request, response, next) => {
     if (request.user && roles.includes(request.user.role)) {
@@ -101,32 +107,56 @@ const {
 } = require("./models");
 
 app.get("/", (req, res) => {
-  res.render("index", { title: "LMS Portal", csrfToken: req.csrfToken() });
+  try {
+    res.render("index", { title: "LMS Portal", csrfToken: req.csrfToken() });
+  } catch (error) {
+    console.log(error);
+    req.flash("error", `Error:${error}`);
+  }
 });
 
 app.get("/signup", (req, res) => {
-  res.render("signup", { title: "Signup", csrfToken: req.csrfToken() });
+  try {
+    res.render("signup", { title: "Signup", csrfToken: req.csrfToken() });
+  } catch (error) {
+    console.log(error);
+    req.flash("error", `Error:${error}`);
+  }
 });
 
 app.get("/login", (req, res) => {
-  res.render("login", { title: "Login", csrfToken: req.csrfToken() });
+  try {
+    res.render("login", { title: "Login", csrfToken: req.csrfToken() });
+  } catch (error) {
+    console.log(error);
+    req.flash("error", `Error:${error}`);
+  }
 });
 
 app.get("/forgetpassword", (req, res) => {
-  res.render("forgetpassword", {
-    title: "Forget Password",
-    csrfToken: req.csrfToken(),
-  });
+  try {
+    res.render("forgetpassword", {
+      title: "Forget Password",
+      csrfToken: req.csrfToken(),
+    });
+  } catch (error) {
+    console.log(error);
+    req.flash("error", `Error:${error}`);
+  }
 });
 
-app.get("/signout", async (request, response, next) => {
-  //Signout
-  request.logout((err) => {
-    if (err) {
-      return next(err);
-    }
-    response.redirect("/");
-  });
+app.get("/signout", async (req, res, next) => {
+  try {
+    req.logout((err) => {
+      if (err) {
+        return next(err);
+      }
+      res.redirect("/");
+    });
+  } catch (error) {
+    console.log(error);
+    req.flash("error", `Error:${error}`);
+  }
 });
 
 app.get(
@@ -158,6 +188,7 @@ app.get(
       }
     } catch (error) {
       console.log(error);
+      req.flash("error", `Error:${error}`);
     }
   },
 );
@@ -199,6 +230,7 @@ app.get(
       }
     } catch (error) {
       console.log(error);
+      req.flash("error", `Error:${error}`);
     }
   },
 );
@@ -220,6 +252,7 @@ app.get(
     } catch (error) {
       res.status(500).json({ error: "Internal server error" });
       console.log(error);
+      req.flash("error", `Error:${error}`);
     }
   },
 );
@@ -255,6 +288,7 @@ app.get(
       }
     } catch (error) {
       console.log(error);
+      req.flash("error", `Error:${error}`);
     }
   },
 );
@@ -264,13 +298,18 @@ app.get(
   connectEnsureLogin.ensureLoggedIn(),
   requireRoles(["Educator"]),
   async (req, res) => {
-    courseID = req.params.id;
-    console.log("courseId", courseID);
-    res.render("newChepter", {
-      title: "Create Chepter",
-      courseID,
-      csrfToken: req.csrfToken(),
-    });
+    try {
+      courseID = req.params.id;
+      console.log("courseId", courseID);
+      res.render("newChepter", {
+        title: "Create Chepter",
+        courseID,
+        csrfToken: req.csrfToken(),
+      });
+    } catch (error) {
+      console.log(error);
+      req.flash("error", `Error:${error}`);
+    }
   },
 );
 
@@ -303,6 +342,7 @@ app.get(
     } catch (error) {
       console.error("Error fetching course or chapter details:", error);
       res.status(500).json({ error: "Internal server error" });
+      req.flash("error", `Error:${error}`);
     }
   },
 );
@@ -354,6 +394,7 @@ app.get(
     } catch (error) {
       console.error("Error fetching content:", error);
       res.status(500).json({ error: "Internal server error" });
+      req.flash("error", `Error:${error}`);
     }
   },
 );
@@ -400,6 +441,7 @@ app.post(
     } catch (error) {
       console.error("Error during role assignment:", error);
       return res.status(500).json({ error: "Internal server error" });
+      req.flash("error", `Error:${error}`);
     }
   },
 );
@@ -418,6 +460,7 @@ app.post("/users", async (req, res) => {
     return res.redirect("/login");
   } catch (error) {
     console.log(error);
+    req.flash("error", `Error:${error}`);
   }
   res.redirect("/");
 });
@@ -440,6 +483,7 @@ app.post(
     } catch (error) {
       console.log("Error creating course:", error);
       return res.status(500).json({ error: "Internal server error" });
+      req.flash("error", `Error:${error}`);
     }
   },
 );
@@ -461,6 +505,7 @@ app.post(
       return res.redirect(`/viewcourse/${courseId}`);
     } catch (error) {
       console.log(error);
+      req.flash("error", `Error:${error}`);
     }
   },
 );
@@ -484,6 +529,7 @@ app.post(
     } catch (error) {
       console.error("Error adding content:", error);
       res.status(500).json({ error: "Internal server error" });
+      req.flash("error", `Error:${error}`);
     }
   },
 );
@@ -514,6 +560,7 @@ app.post(
       });
       res.redirect(`/viewcourse/${courseId}`);
     } catch (error) {
+      req.flash("error", `Error:${error}`);
       console.error("Error enrolling in course:", error);
       res.status(500).json({ error: "Internal server error" });
     }
@@ -537,6 +584,7 @@ app.post(
       res.redirect(`/viewcourse/${courseId}/chapters/${chapterId}/content`);
       // res.status(200).json({ message: "Chapter marked as complete" });
     } catch (error) {
+      req.flash("error", `Error:${error}`);
       console.error("Error marking chapter as complete:", error);
       res.status(500).json({ error: "Internal server error" });
     }

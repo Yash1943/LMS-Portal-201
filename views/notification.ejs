@@ -1,0 +1,14 @@
+<% if (messages && messages.success && messages.success.length > 0) { %>
+    <% messages.success.forEach(function(message) { %>
+        <div class="text-green-600">
+            <%= message %>
+        </div>
+    <% }); %>
+<% } %>
+<% if (messages && messages.error && messages.error.length > 0) { %>
+    <% messages.error.forEach(function(message) { %>
+        <div class="bg-red-600 text-white my-2 px-3 ">
+            <%= message %>
+        </div>
+    <% }); %>
+<% } %>

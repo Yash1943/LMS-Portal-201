@@ -135,7 +135,7 @@ app.get("/login", (req, res) => {
 
 app.get("/forgetpassword", (req, res) => {
   try {
-    res.render("forgetpassword", {
+    res.render("forgetPassword", {
       title: "Forget Password",
       csrfToken: req.csrfToken(),
     });

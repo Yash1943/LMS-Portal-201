@@ -112,6 +112,13 @@ app.get("/login", (req, res) => {
   res.render("login", { title: "Login", csrfToken: req.csrfToken() });
 });
 
+app.get("/forgetpassword", (req, res) => {
+  res.render("forgetpassword", {
+    title: "Forget Password",
+    csrfToken: req.csrfToken(),
+  });
+});
+
 app.get("/signout", async (request, response, next) => {
   //Signout
   request.logout((err) => {
@@ -350,6 +357,23 @@ app.get(
     }
   },
 );
+
+app.post("/forgetpassword/User", async (req, res) => {
+  const user = await User.findOne({ where: { email: req.body.email } });
+  if (user) {
+    if (req.body.newpass === req.body.confirmpass) {
+      let Hashpass = await bcrypt.hash(req.body.newpass, saltRound);
+      await User.update(
+        { password: Hashpass },
+        { where: { email: req.body.email } },
+      );
+      console.log("Password Updated");
+      return res.redirect("/login");
+    }
+    // return res.redirect("/forgetpassword");
+  }
+  res.redirect("/login");
+});
 
 app.post(
   "/Roleassign",

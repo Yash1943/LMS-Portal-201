@@ -5,8 +5,6 @@ const app = require("../app");
 const bcrypt = require("bcrypt");
 
 let server, agent;
-let csrfToken;
-// let educator;
 
 // Helper function to extract CSRF token from response
 function extractCsrfToken(res) {
@@ -18,7 +16,7 @@ function extractCsrfToken(res) {
 const login = async (agent, username, password) => {
   let res = await agent.get("/login");
   let csrfToken = extractCsrfToken(res);
-  res = await agent.post("/users").send({
+  res = await agent.post("/Roleassign").send({
     email: username,
     password: password,
     _csrf: csrfToken,
@@ -52,7 +50,7 @@ describe("Role-Based Login and Educator Features", () => {
     await server.close();
   });
 
-  it("should allow Educator to login and redirect to Educator dashboard", async () => {
+  test("should allow Educator to login and redirect to Educator dashboard", async () => {
     let res = await agent.get("/login");
     let csrfToken = extractCsrfToken(res);
     res = await agent.post("/Roleassign").send({
@@ -63,45 +61,31 @@ describe("Role-Based Login and Educator Features", () => {
     expect(res.status).toBe(302);
     expect(res.header.location).toBe("/Educator_dashboard");
   });
-
-  it("should allow Learner to login and redirect to Learner dashboard", async () => {
-    let res = await agent.get("/login");
-    let csrfToken = extractCsrfToken(res);
-    res = await agent.post("/Roleassign").send({
-      email: "learner@example.com",
-      password: "password",
-      _csrf: csrfToken,
-    });
-    expect(res.status).toBe(302);
-    expect(res.header.location).toBe("/Learner_dashboard");
-  });
-
-  it("should allow Educator to create a course", async () => {
+  test("should allow Educator to create a course", async () => {
     // Login as Educator
     await login(agent, "educator@example.com", "password");
 
     let res = await agent.get("/createCourse");
-    csrfToken = extractCsrfToken(res);
+    let csrfToken = extractCsrfToken(res);
     res = await agent.post("/createCourse").send({
       courseName: "Test Course",
       courseDescription: "Test Course Description",
       _csrf: csrfToken,
     });
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(302);
     expect(res.header.location).toBe("/Educator_dashboard");
 
     const course = await db.Course.findOne({ where: { name: "Test Course" } });
     expect(course).not.toBeNull();
     expect(course.description).toBe("Test Course Description");
   });
-
-  it("should allow Educator to create a chapter", async () => {
+  test("should allow Educator to create a chapter", async () => {
     // Login as Educator
     await login(agent, "educator@example.com", "password");
 
     const course = await db.Course.findOne({ where: { name: "Test Course" } });
     let res = await agent.get(`/viewcourse/${course.id}/chapters/newchapter`);
-    csrfToken = extractCsrfToken(res);
+    let csrfToken = extractCsrfToken(res);
     res = await agent
       .post(`/viewcourse/${course.id}/chapters/newchapter`)
       .send({
@@ -119,18 +103,22 @@ describe("Role-Based Login and Educator Features", () => {
     expect(chapter.description).toBe("Test Chapter Description");
   });
 
-  it("should allow Educator to create a chapter page", async () => {
-    // Login as Educator
+  test("should allow Educator to create a chapter page", async () => {
     await login(agent, "educator@example.com", "password");
 
     const course = await db.Course.findOne({ where: { name: "Test Course" } });
     const chapter = await db.Chapter.findOne({
       where: { title: "Test Chapter" },
     });
+    console.log("TESTCourse: ", course.id);
+    console.log("TESTChapter: ", chapter.id);
+    // /viewcourse/:courseId/chapters/:chapterId/addcontent
     let res = await agent.get(
       `/viewcourse/${course.id}/chapters/${chapter.id}/addcontent`,
     );
-    csrfToken = extractCsrfToken(res);
+    // console.log("RESPONSE of TESTCGET addcontent ", res);
+    let csrfToken = extractCsrfToken(res);
+    console.log("CSRF Token: ", csrfToken);
     res = await agent
       .post(`/viewcourse/${course.id}/chapters/${chapter.id}/addcontent`)
       .send({
@@ -139,8 +127,11 @@ describe("Role-Based Login and Educator Features", () => {
         contentDescription: "Test Content Description",
         _csrf: csrfToken,
       });
+
     expect(res.status).toBe(302);
-    expect(res.header.location).toBe(`/viewcourse/${course.id}`);
+    expect(res.header.location).toBe(
+      `/viewcourse/${course.id}/chapters/${chapter.id}/content`,
+    );
 
     const content = await db.ChapterPages.findOne({
       where: { title: "Test Content" },
@@ -148,4 +139,117 @@ describe("Role-Based Login and Educator Features", () => {
     expect(content).not.toBeNull();
     expect(content.description).toBe("Test Content Description");
   });
+  test("should allow Learner to login and redirect to Learner dashboard", async () => {
+    let res = await agent.get("/login");
+    let csrfToken = extractCsrfToken(res);
+    res = await agent.post("/Roleassign").send({
+      email: "learner@example.com",
+      password: "password",
+      _csrf: csrfToken,
+    });
+    expect(res.status).toBe(302);
+    expect(res.header.location).toBe("/Learner_dashboard");
+  });
+  test("should allow Learner to enroll in a course", async () => {
+    // Login as Learner
+    await login(agent, "learner@example.com", "password");
+    const learner = await db.User.findOne({
+      where: { email: "learner@example.com" },
+    });
+    // console.log("Learner ID: ", learner.id);
+
+    const course = await db.Course.create({
+      name: "Test Course",
+      description: "Test Course Description",
+    });
+    // console.log("TESTCOURSE: ", course.id);
+    let res = await agent.get(`/viewcourse/${course.id}`);
+    let csrfToken = extractCsrfToken(res);
+    // console.log("TESTCSRF Token: ", csrfToken);
+    res = await agent.post(`/enroll/${course.id}`).send({
+      courseId: course.id,
+      learnerId: learner.id,
+      _csrf: csrfToken,
+      enrollStatus: true,
+    });
+    expect(res.status).toBe(302);
+    expect(res.header.location).toBe(`/viewcourse/${course.id}`);
+  });
+  test("should allow Learner to mark a chapter as completed", async () => {
+    // Login as Learner
+    await login(agent, "learner@example.com", "password");
+    const learner = await db.User.findOne({
+      where: { email: "learner@example.com" },
+    });
+    // console.log("Learner ID: ", learner.id);
+    const course = await db.Course.create({
+      name: "Test Course",
+      description: "Test Course Description",
+    });
+    const chapter = await db.Chapter.create({
+      title: "Test Chapter",
+      description: "Test Chapter Description",
+      courseId: course.id,
+    });
+    // console.log("Chapter ID: ", chapter.id);
+    let res = await agent.get(
+      `/viewcourse/${course.id}/chapters/${chapter.id}/content`,
+    );
+    let csrfToken = extractCsrfToken(res);
+    // console.log("CSRF Token: ", csrfToken); // Log the CSRF token
+
+    res = await agent
+      .post(
+        `/viewcourse/${course.id}/chapters/${chapter.id}/content/markAsComplete`,
+      )
+      .send({
+        chapetPageId: chapter.id,
+        LearnerId: learner.id,
+        markAsComple: true,
+        _csrf: csrfToken,
+      });
+
+    expect(res.status).toBe(302);
+    expect(res.header.location).toBe(
+      `/viewcourse/${course.id}/chapters/${chapter.id}/content`,
+    );
+  });
 });
+
+// test("should allow Educator to add content to a chapter", async () => {
+//   // Login as Educator
+//   await login(agent, "educator@example.com", "password");
+
+//   // Mock Course and Chapter creation
+//   const course = await db.Course.create({
+//     name: "Test Course",
+//     description: "Test Course Description",
+//   });
+
+//   const chapter = await db.Chapter.create({
+//     name: "Test Chapter",
+//     courseId: course.id,
+//   });
+
+//   // 1. Test the GET request to fetch course and chapter details
+//   let res = await agent.get(`/viewcourse/${course.id}/chapters/${chapter.id}/addcontent`);
+//   let csrfToken = extractCsrfToken(res); // Assuming extractCsrfToken is a utility function to get the CSRF token from the response
+//   expect(res.status).toBe(200);
+//   expect(res.text).toContain("Add Content"); // Check if the page renders "Add Content" heading
+
+//   // 2. Test the POST request to add content to the chapter
+//   res = await agent.post(`/viewcourse/${course.id}/chapters/${chapter.id}/addcontent`).send({
+//     contentTitle: "New Test Content",
+//     chapterSelect: chapter.id,
+//     contentDescription: "This is a test description for the content",
+//     _csrf: csrfToken, // CSRF token is passed for POST requests
+//   });
+
+//   expect(res.status).toBe(302); // Check for redirection after content is added
+//   expect(res.header.location).toBe(`/viewcourse/${course.id}`); // Ensure redirection is to the course view
+
+//   // Optionally, verify if content was added in the database
+//   const content = await db.ChapterPages.findOne({ where: { chapterID: chapter.id } });
+//   expect(content.title).toBe("New Test Content");
+//   expect(content.description).toBe("This is a test description for the content");
+// });

@@ -28,7 +28,10 @@ module.exports = (sequelize, DataTypes) => {
   }
   Course.init(
     {
-      name: DataTypes.STRING,
+      name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
       photoOfCourse: DataTypes.STRING,
       description: DataTypes.STRING,
       educatorName: DataTypes.STRING,

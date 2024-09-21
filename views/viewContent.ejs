@@ -16,7 +16,7 @@
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            "CSRF-Token": token // Include the CSRF token in the headers
+            "CSRF-Token": token 
           },
           body: JSON.stringify({ completed: true }),
         })
@@ -29,7 +29,6 @@
           console.error(err);
         });
       };
-      
         window.gotoNext = function(nextChapterId) {
           if (nextChapterId) {
             window.location.href = `/viewcourse/<%= courseId %>/chapters/${nextChapterId}/content`;
@@ -71,6 +70,7 @@
         <% } %>
       </div>
       <div class="mb-4 flex justify-between">
+         <% if (userRole === 'Learner') { %>
         <% if (isCompleted) { %>
           <button class="bg-gray-500 text-white px-4 py-2 rounded-md cursor-not-allowed" disabled>
             MarkAsCompleted
@@ -86,6 +86,7 @@
         <button class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600" onclick="gotoNext(<%= nextChapter ? nextChapter.id : null %>)">
           Goto next
         </button>
+        <% } %>
       </div>
     </div>
   </body>

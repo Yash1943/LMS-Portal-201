@@ -26,7 +26,7 @@
                 <% if (isEnrolled) { %>
                   <button  class="bg-gray-500 text-white w-full font-medium px-4 py-2 rounded-md text-center cursor-not-allowed" disabled>Enrolled</button>
               <% } else { %>
-                <form action="/enroll/<%= course.id %>" method="POST">
+                <form action="/enroll/<%= viewcourses.id %>" method="POST">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
              <button type="submit" class="bg-green-500 text-white w-full font-medium px-4 py-2 rounded-md hover:bg-green-600 text-center">Enroll</button>
             <% } %>

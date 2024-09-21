@@ -34,7 +34,7 @@ app.use(
     cookie: {
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
-  })
+  }),
 );
 
 app.use(passport.initialize());
@@ -63,8 +63,8 @@ passport.use(
         .catch((error) => {
           return done(error);
         });
-    }
-  )
+    },
+  ),
 );
 
 passport.serializeUser((user, done) => {
@@ -91,7 +91,14 @@ const requireRoles = (roles) => {
     }
   };
 };
-const { User, Course, Chapter, ChapterPages, enrollCourse, markAsCompletion } = require("./models");
+const {
+  User,
+  Course,
+  Chapter,
+  ChapterPages,
+  enrollCourse,
+  markAsCompletion,
+} = require("./models");
 
 app.get("/", (req, res) => {
   res.render("index", { title: "LMS Portal", csrfToken: req.csrfToken() });
@@ -141,7 +148,7 @@ app.post(
       console.error("Error during role assignment:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 app.get(
@@ -174,7 +181,7 @@ app.get(
     } catch (error) {
       console.log(error);
     }
-  }
+  },
 );
 
 app.get(
@@ -215,7 +222,7 @@ app.get(
     } catch (error) {
       console.log(error);
     }
-  }
+  },
 );
 
 app.post("/users", async (req, res) => {
@@ -241,29 +248,43 @@ app.get(
   connectEnsureLogin.ensureLoggedIn(),
   requireRoles(["Educator"]),
   async (req, res) => {
-    res.render("createCourse", {
-      title: "Create Course",
-      csrfToken: req.csrfToken(),
-    });
-  }
+    try {
+      if (req.accepts("html")) {
+        res.render("createCourse", {
+          title: "Create Course",
+          csrfToken: req.csrfToken(),
+        });
+      } else {
+        res.json();
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+      console.log(error);
+    }
+  },
 );
 
-app.post("/createCourse", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
-  console.log("createCourse body:", req.body);
-  const EducatorId = req.user.id;
-  console.log("EducatorId", EducatorId);
-  try {
-    await Course.create({
-      name: req.body.courseName,
-      description: req.body.courseDescription,
-      educatorId: req.user.id,
-      educatorName: req.user.name,
-    });
-    return res.redirect("/Educator_dashboard");
-  } catch (error) {
-    console.log(error);
-  }
-});
+app.post(
+  "/createCourse",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    console.log("createCourse body:", req.body);
+    const EducatorId = req.user.id;
+    console.log("EducatorId", EducatorId);
+    try {
+      await Course.create({
+        name: req.body.courseName,
+        description: req.body.courseDescription,
+        educatorId: req.user.id,
+        educatorName: req.user.name,
+      });
+      return res.redirect("/Educator_dashboard");
+    } catch (error) {
+      console.log("Error creating course:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  },
+);
 
 app.get(
   "/viewcourse/:id",
@@ -281,7 +302,7 @@ app.get(
       const chapters = await Chapter.findAll({ where: { courseId: courseId } });
       console.log("chapters: ", chapters);
       const userRole = req.user.role;
-      // console.log("viewcourses", viewcourses);
+      console.log("viewcourses", viewcourses);
       if (req.accepts("html")) {
         res.render("Chepter", {
           title: "Create Chepter",
@@ -297,7 +318,7 @@ app.get(
     } catch (error) {
       console.log(error);
     }
-  }
+  },
 );
 
 app.get(
@@ -312,7 +333,7 @@ app.get(
       courseID,
       csrfToken: req.csrfToken(),
     });
-  }
+  },
 );
 
 app.post(
@@ -333,7 +354,7 @@ app.post(
     } catch (error) {
       console.log(error);
     }
-  }
+  },
 );
 
 app.get(
@@ -354,7 +375,7 @@ app.get(
       if (!course || !chapter) {
         return res.status(404).json({ error: "Course or Chapter not found" });
       }
-
+      console.log("CSRF Token of get:", req.csrfToken());
       res.render("addcontent", {
         title: "Add Content",
         csrfToken: req.csrfToken(),
@@ -366,7 +387,7 @@ app.get(
       console.error("Error fetching course or chapter details:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 app.post(
@@ -377,6 +398,7 @@ app.post(
     try {
       // console.log("contentDescription :", req.body);
       // console.log("chapterID", req.body.chapterSelect);
+      console.log("CSRF addcontent POST TOKEN:", req.csrfToken());
       const courseId = req.params.courseId;
       await ChapterPages.create({
         title: req.body.contentTitle,
@@ -388,7 +410,7 @@ app.post(
       console.error("Error adding content:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 app.get(
@@ -413,6 +435,7 @@ app.get(
           markAsComple: true,
         },
       });
+      const userRole = req.user.role;
       // console.log("completion", completion);
       const isCompleted = !!completion;
       // console.log("isCompleted", isCompleted);
@@ -431,13 +454,14 @@ app.get(
           courseId,
           isCompleted,
           nextChapter,
+          userRole,
         });
       }
     } catch (error) {
       console.error("Error fetching content:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 app.post(
@@ -454,7 +478,9 @@ app.post(
       });
       console.log("existingEnrollment", existingEnrollment);
       if (existingEnrollment) {
-        return res.status(400).json({ message: "You are already enrolled in this course." });
+        return res
+          .status(400)
+          .json({ message: "You are already enrolled in this course." });
       }
       await enrollCourse.create({
         LearnerId: learnerId,
@@ -467,7 +493,7 @@ app.post(
       console.error("Error enrolling in course:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 app.post(
@@ -490,6 +516,6 @@ app.post(
       console.error("Error marking chapter as complete:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 module.exports = app;

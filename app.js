@@ -36,7 +36,7 @@ app.use(
     cookie: {
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
-  }),
+  })
 );
 
 app.use(passport.initialize());
@@ -65,8 +65,8 @@ passport.use(
         .catch((error) => {
           return done(error);
         });
-    },
-  ),
+    }
+  )
 );
 
 passport.serializeUser((user, done) => {
@@ -97,14 +97,7 @@ const requireRoles = (roles) => {
     }
   };
 };
-const {
-  User,
-  Course,
-  Chapter,
-  ChapterPages,
-  enrollCourse,
-  markAsCompletion,
-} = require("./models");
+const { User, Course, Chapter, ChapterPages, enrollCourse, markAsCompletion } = require("./models");
 
 app.get("/", (req, res) => {
   try {
@@ -190,8 +183,10 @@ app.get(
       console.log(error);
       req.flash("error", `Error:${error}`);
     }
-  },
+  }
 );
+
+const { Op, sequelize } = require("./models"); // Adjust the path as necessary
 
 app.get(
   "/Learner_dashboard",
@@ -213,8 +208,43 @@ app.get(
       // console.log("userRole", userRole);
       const user = await User.findOne({ where: { id: userId } });
       const viewcourses = await Course.getCourseByEducatorId();
-      console.log("user", user);
-      console.log("viewcourses", viewcourses);
+      // console.log("user", user);
+      // console.log("viewcourses", viewcourses);
+
+      // const progressData = await Promise.all(
+      //   enrollments.map(async (enrollment) => {
+      //     const course = enrollment.course;
+
+      //     // Fetch total chapters for the course
+      //     const totalChapters = await Chapter.count({
+      //       where: { courseId: course.id },
+      //     });
+
+      //     // Fetch completed chapters for the learner
+      //     const completedChapters = await markAsCompletion.count({
+      //       where: {
+      //         LearnerId: learnerId,
+      //         markAsComple: true,
+      //         chapterId: {
+      //           [Op.in]: sequelize.literal(
+      //             `(SELECT id FROM Chapters WHERE courseId = ${course.id})`
+      //           ),
+      //         },
+      //       },
+      //     });
+
+      //     // Calculate progress percentage
+      //     const progress = totalChapters ? (completedChapters / totalChapters) * 100 : 0;
+
+      //   return {
+      //     course,
+      //     progress,
+      //   };
+      // })
+      // );
+
+      // console.log("Progres", progressData);
+
       if (req.accepts("html")) {
         res.render("Learner_dashboard", {
           title: "Learner Dashboard",
@@ -232,7 +262,54 @@ app.get(
       console.log(error);
       req.flash("error", `Error:${error}`);
     }
-  },
+  }
+);
+
+app.get(
+  "/educator_report",
+  connectEnsureLogin.ensureLoggedIn(),
+  requireRoles(["Educator"]),
+  async (req, res) => {
+    try {
+      const educatorId = req.user.id;
+      const userRole = req.user.role;
+
+      // Fetch all courses created by the logged-in educator
+      const courses = await Course.findAll({
+        where: { educatorId: educatorId },
+        include: [
+          {
+            model: enrollCourse,
+            as: "enrollments",
+            attributes: [],
+          },
+        ],
+        attributes: {
+          include: [[sequelize.fn("COUNT", sequelize.col("enrollments.id")), "enrollmentCount"]],
+        },
+        group: ["Course.id"],
+      });
+
+      let popularCourse = null;
+      if (courses.length > 0) {
+        popularCourse = courses.reduce((max, course) => {
+          return course.dataValues.enrollmentCount > max.dataValues.enrollmentCount ? course : max;
+        });
+      }
+
+      res.render("educator_report", {
+        title: "Educator Report",
+        courses,
+        popularCourse,
+        userRole,
+        csrfToken: req.csrfToken(),
+      });
+    } catch (error) {
+      console.error("Error fetching educator report data:", error);
+      req.flash("error", `Error:${error}`);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
 );
 
 app.get(
@@ -254,7 +331,7 @@ app.get(
       console.log(error);
       req.flash("error", `Error:${error}`);
     }
-  },
+  }
 );
 
 app.get(
@@ -290,7 +367,7 @@ app.get(
       console.log(error);
       req.flash("error", `Error:${error}`);
     }
-  },
+  }
 );
 
 app.get(
@@ -310,7 +387,7 @@ app.get(
       console.log(error);
       req.flash("error", `Error:${error}`);
     }
-  },
+  }
 );
 
 app.get(
@@ -344,7 +421,7 @@ app.get(
       res.status(500).json({ error: "Internal server error" });
       req.flash("error", `Error:${error}`);
     }
-  },
+  }
 );
 
 app.get(
@@ -396,7 +473,7 @@ app.get(
       res.status(500).json({ error: "Internal server error" });
       req.flash("error", `Error:${error}`);
     }
-  },
+  }
 );
 
 app.post("/forgetpassword/User", async (req, res) => {
@@ -404,10 +481,7 @@ app.post("/forgetpassword/User", async (req, res) => {
   if (user) {
     if (req.body.newpass === req.body.confirmpass) {
       let Hashpass = await bcrypt.hash(req.body.newpass, saltRound);
-      await User.update(
-        { password: Hashpass },
-        { where: { email: req.body.email } },
-      );
+      await User.update({ password: Hashpass }, { where: { email: req.body.email } });
       console.log("Password Updated");
       return res.redirect("/login");
     }
@@ -443,7 +517,7 @@ app.post(
       return res.status(500).json({ error: "Internal server error" });
       req.flash("error", `Error:${error}`);
     }
-  },
+  }
 );
 
 app.post("/users", async (req, res) => {
@@ -465,28 +539,24 @@ app.post("/users", async (req, res) => {
   res.redirect("/");
 });
 
-app.post(
-  "/createCourse",
-  connectEnsureLogin.ensureLoggedIn(),
-  async (req, res) => {
-    console.log("createCourse body:", req.body);
-    const EducatorId = req.user.id;
-    console.log("EducatorId", EducatorId);
-    try {
-      await Course.create({
-        name: req.body.courseName,
-        description: req.body.courseDescription,
-        educatorId: req.user.id,
-        educatorName: req.user.name,
-      });
-      return res.redirect("/Educator_dashboard");
-    } catch (error) {
-      console.log("Error creating course:", error);
-      return res.status(500).json({ error: "Internal server error" });
-      req.flash("error", `Error:${error}`);
-    }
-  },
-);
+app.post("/createCourse", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
+  console.log("createCourse body:", req.body);
+  const EducatorId = req.user.id;
+  console.log("EducatorId", EducatorId);
+  try {
+    await Course.create({
+      name: req.body.courseName,
+      description: req.body.courseDescription,
+      educatorId: req.user.id,
+      educatorName: req.user.name,
+    });
+    return res.redirect("/Educator_dashboard");
+  } catch (error) {
+    console.log("Error creating course:", error);
+    return res.status(500).json({ error: "Internal server error" });
+    req.flash("error", `Error:${error}`);
+  }
+});
 
 app.post(
   "/viewcourse/:courseID/chapters/newchapter",
@@ -507,7 +577,7 @@ app.post(
       console.log(error);
       req.flash("error", `Error:${error}`);
     }
-  },
+  }
 );
 
 app.post(
@@ -531,7 +601,7 @@ app.post(
       res.status(500).json({ error: "Internal server error" });
       req.flash("error", `Error:${error}`);
     }
-  },
+  }
 );
 
 app.post(
@@ -548,9 +618,7 @@ app.post(
       });
       console.log("existingEnrollment", existingEnrollment);
       if (existingEnrollment) {
-        return res
-          .status(400)
-          .json({ message: "You are already enrolled in this course." });
+        return res.status(400).json({ message: "You are already enrolled in this course." });
       }
       await enrollCourse.create({
         LearnerId: learnerId,
@@ -564,7 +632,7 @@ app.post(
       console.error("Error enrolling in course:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  },
+  }
 );
 
 app.post(
@@ -588,7 +656,7 @@ app.post(
       console.error("Error marking chapter as complete:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  },
+  }
 );
 
 module.exports = app;

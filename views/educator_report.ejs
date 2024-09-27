@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link
+    href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+    rel="stylesheet" />
+  <meta name="csrf-token" content="<%= csrfToken %>" />
+</head>
+<body class="bg-gray-100">
+      <div class="max-w-4xl mx-auto p-6">
+          <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Educator Report</h1>
+          <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+      <nav class="mb-6">
+        <% if (userRole === 'Educator') { %>
+        <a
+          href="/Educator_dashboard"
+          class="text-blue-600 underline hover:text-blue-800 font-semibold text-lg">
+          Educator Dashboard >
+        </a>
+        <% } else if (userRole === 'Learner') { %>
+        <a
+          href="/Learner_dashboard"
+          class="text-blue-600 underline hover:text-blue-800 font-semibold text-lg">
+          Learner Dashboard >
+        </a>
+        <% } %>
+      </nav>
+
+      <div class="flex justify-between items-center">
+        <h1 class="m-4 p-2 text-2xl text-gray-600">Courses</h1>
+        <a class="p-2 bg-red-600 hover:bg-red-800 w-20 h-10 font-medium text-white rounded" href="/signout">Logout</a>
+      </div>
+      <table class="min-w-full bg-white">
+        <thead>
+          <tr>
+            <th class="py-2 px-4 bg-gray-200 text-gray-600 text-left text-sm uppercase font-semibold">Course Name</th>
+            <th class="py-2 px-4 bg-gray-200 text-gray-600 text-left text-sm uppercase font-semibold">Enrolled Students</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% courses.forEach(course => { %>
+            <tr class="border-t">
+              <td class="py-2 px-4 text-gray-700"><%= course.name %></td>
+              <td class="py-2 px-4 text-gray-700"><%= course.dataValues.enrollmentCount %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <% if (popularCourse) { %>
+    <div class="bg-white p-6 rounded-lg shadow-md">
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">Most Popular Course</h2>
+      <p class="text-gray-600">Course Name: <%= popularCourse.name %></p>
+      <p class="text-gray-600">Number of Enrolled Students: <%= popularCourse.dataValues.enrollmentCount %></p>
+    </div>
+  <% } %>
+  </div>
+</body>
+</html>

@@ -26,10 +26,7 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     static async updateChapter(chapterId, title, description) {
-      return await Chapter.update(
-        { title, description },
-        { where: { id: chapterId } },
-      );
+      return await Chapter.update({ title, description }, { where: { id: chapterId } });
     }
     static async deleteChapter(chapterId) {
       return await Chapter.destroy({ where: { id: chapterId } });
@@ -53,7 +50,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: "Chapter",
-    },
+    }
   );
   return Chapter;
 };

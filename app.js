@@ -36,7 +36,7 @@ app.use(
     cookie: {
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
-  })
+  }),
 );
 
 app.use(passport.initialize());
@@ -65,8 +65,8 @@ passport.use(
         .catch((error) => {
           return done(error);
         });
-    }
-  )
+    },
+  ),
 );
 
 passport.serializeUser((user, done) => {
@@ -97,7 +97,14 @@ const requireRoles = (roles) => {
     }
   };
 };
-const { User, Course, Chapter, ChapterPages, enrollCourse, markAsCompletion } = require("./models");
+const {
+  User,
+  Course,
+  Chapter,
+  ChapterPages,
+  enrollCourse,
+  markAsCompletion,
+} = require("./models");
 
 app.get("/", (req, res) => {
   try {
@@ -183,10 +190,10 @@ app.get(
       console.log(error);
       req.flash("error", `Error:${error}`);
     }
-  }
+  },
 );
 
-const { Op, sequelize } = require("./models"); // Adjust the path as necessary
+const { sequelize } = require("./models"); // Adjust the path as necessary
 
 app.get(
   "/Learner_dashboard",
@@ -262,7 +269,7 @@ app.get(
       console.log(error);
       req.flash("error", `Error:${error}`);
     }
-  }
+  },
 );
 
 app.get(
@@ -285,7 +292,12 @@ app.get(
           },
         ],
         attributes: {
-          include: [[sequelize.fn("COUNT", sequelize.col("enrollments.id")), "enrollmentCount"]],
+          include: [
+            [
+              sequelize.fn("COUNT", sequelize.col("enrollments.id")),
+              "enrollmentCount",
+            ],
+          ],
         },
         group: ["Course.id"],
       });
@@ -293,7 +305,10 @@ app.get(
       let popularCourse = null;
       if (courses.length > 0) {
         popularCourse = courses.reduce((max, course) => {
-          return course.dataValues.enrollmentCount > max.dataValues.enrollmentCount ? course : max;
+          return course.dataValues.enrollmentCount >
+            max.dataValues.enrollmentCount
+            ? course
+            : max;
         });
       }
 
@@ -309,7 +324,35 @@ app.get(
       req.flash("error", `Error:${error}`);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
+);
+
+app.get(
+  "/my_courses",
+  connectEnsureLogin.ensureLoggedIn(),
+  requireRoles(["Educator"]),
+  async (req, res) => {
+    try {
+      const educatorId = req.user.id;
+      const userRole = req.user.role;
+
+      // Fetch all courses created by the logged-in educator
+      const courses = await Course.findAll({
+        where: { educatorId: educatorId },
+      });
+
+      res.render("my_courses", {
+        title: "My Courses",
+        courses,
+        userRole,
+        csrfToken: req.csrfToken(),
+      });
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+      req.flash("error", `Error:${error}`);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
 );
 
 app.get(
@@ -331,7 +374,7 @@ app.get(
       console.log(error);
       req.flash("error", `Error:${error}`);
     }
-  }
+  },
 );
 
 app.get(
@@ -367,7 +410,7 @@ app.get(
       console.log(error);
       req.flash("error", `Error:${error}`);
     }
-  }
+  },
 );
 
 app.get(
@@ -387,7 +430,7 @@ app.get(
       console.log(error);
       req.flash("error", `Error:${error}`);
     }
-  }
+  },
 );
 
 app.get(
@@ -421,7 +464,7 @@ app.get(
       res.status(500).json({ error: "Internal server error" });
       req.flash("error", `Error:${error}`);
     }
-  }
+  },
 );
 
 app.get(
@@ -473,7 +516,7 @@ app.get(
       res.status(500).json({ error: "Internal server error" });
       req.flash("error", `Error:${error}`);
     }
-  }
+  },
 );
 
 app.post("/forgetpassword/User", async (req, res) => {
@@ -481,7 +524,10 @@ app.post("/forgetpassword/User", async (req, res) => {
   if (user) {
     if (req.body.newpass === req.body.confirmpass) {
       let Hashpass = await bcrypt.hash(req.body.newpass, saltRound);
-      await User.update({ password: Hashpass }, { where: { email: req.body.email } });
+      await User.update(
+        { password: Hashpass },
+        { where: { email: req.body.email } },
+      );
       console.log("Password Updated");
       return res.redirect("/login");
     }
@@ -517,7 +563,7 @@ app.post(
       return res.status(500).json({ error: "Internal server error" });
       req.flash("error", `Error:${error}`);
     }
-  }
+  },
 );
 
 app.post("/users", async (req, res) => {
@@ -539,24 +585,28 @@ app.post("/users", async (req, res) => {
   res.redirect("/");
 });
 
-app.post("/createCourse", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
-  console.log("createCourse body:", req.body);
-  const EducatorId = req.user.id;
-  console.log("EducatorId", EducatorId);
-  try {
-    await Course.create({
-      name: req.body.courseName,
-      description: req.body.courseDescription,
-      educatorId: req.user.id,
-      educatorName: req.user.name,
-    });
-    return res.redirect("/Educator_dashboard");
-  } catch (error) {
-    console.log("Error creating course:", error);
-    return res.status(500).json({ error: "Internal server error" });
-    req.flash("error", `Error:${error}`);
-  }
-});
+app.post(
+  "/createCourse",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    console.log("createCourse body:", req.body);
+    const EducatorId = req.user.id;
+    console.log("EducatorId", EducatorId);
+    try {
+      await Course.create({
+        name: req.body.courseName,
+        description: req.body.courseDescription,
+        educatorId: req.user.id,
+        educatorName: req.user.name,
+      });
+      return res.redirect("/Educator_dashboard");
+    } catch (error) {
+      console.log("Error creating course:", error);
+      return res.status(500).json({ error: "Internal server error" });
+      req.flash("error", `Error:${error}`);
+    }
+  },
+);
 
 app.post(
   "/viewcourse/:courseID/chapters/newchapter",
@@ -577,7 +627,7 @@ app.post(
       console.log(error);
       req.flash("error", `Error:${error}`);
     }
-  }
+  },
 );
 
 app.post(
@@ -601,7 +651,7 @@ app.post(
       res.status(500).json({ error: "Internal server error" });
       req.flash("error", `Error:${error}`);
     }
-  }
+  },
 );
 
 app.post(
@@ -618,7 +668,9 @@ app.post(
       });
       console.log("existingEnrollment", existingEnrollment);
       if (existingEnrollment) {
-        return res.status(400).json({ message: "You are already enrolled in this course." });
+        return res
+          .status(400)
+          .json({ message: "You are already enrolled in this course." });
       }
       await enrollCourse.create({
         LearnerId: learnerId,
@@ -632,7 +684,7 @@ app.post(
       console.error("Error enrolling in course:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 app.post(
@@ -656,7 +708,7 @@ app.post(
       console.error("Error marking chapter as complete:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 module.exports = app;

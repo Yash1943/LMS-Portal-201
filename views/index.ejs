@@ -10,18 +10,18 @@
       rel="stylesheet" />
     <title><%= title %></title>
   </head>
-  <body>
-    <div class="grid grid-cols-8">
-      <div class="col-start-3 col-span-2">
-        <%- include('header.ejs') %>
-        <p class="py-2">Welcome to the Learning Managment System</p>
-        <p class="py-2">
-          New here ? <a href="/signup" class="text-blue-600 underline">Sign-up now</a>
-        </p>
-        <p class="py-2">
-          Already have an account? <a href="/login" class="text-blue-600 underline">Sign-in</a>
-        </p>
-      </div>
+  <body class="min-h-screen flex items-center justify-center bg-gray-50">
+    <div class="w-full max-w-md mx-auto p-4 bg-white rounded-lg shadow-md">
+      <%- include('header.ejs') %>
+      <p class="py-2 text-lg font-semibold text-center">
+        Welcome to the Learning Management System
+      </p>
+      <p class="py-2 text-center">
+        New here? <a href="/signup" class="text-blue-600 underline">Sign-up now</a>
+      </p>
+      <p class="py-2 text-center">
+        Already have an account? <a href="/login" class="text-blue-600 underline">Sign-in</a>
+      </p>
     </div>
   </body>
 </html>

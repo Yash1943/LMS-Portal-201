@@ -24,7 +24,7 @@ const login = async (agent, username, password) => {
   return res;
 };
 
-describe("Role-Based Login and Educator Features", () => {
+describe("LMS-Portal Features Tests", () => {
   beforeAll(async () => {
     await db.sequelize.sync({ force: true });
     server = app.listen(4000);

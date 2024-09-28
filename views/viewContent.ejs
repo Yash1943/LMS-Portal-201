@@ -38,13 +38,14 @@
         };
     </script>
   </head>
-  <body>
-    <div class="container mx-auto m-20 p-10 bg-white shadow-lg rounded-lg">
-      <nav class="mb-4">
+  <body class="bg-gray-100">
+    <div class="container mx-auto p-6 sm:p-10 lg:p-20 bg-white shadow-lg rounded-lg">
+      <!-- Navigation Bar -->
+      <nav class="mb-4 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
         <a
-          href="/Learner_dashboard"
+          href="/Educator_dashboard"
           class="text-blue-600 underline hover:text-blue-800 font-semibold text-lg">
-          Learner Dashboard >
+          Educator Dashboard >
         </a>
         <a
           href="/viewcourse/<%= courseId %>"
@@ -52,40 +53,51 @@
           Chapters >
         </a>
       </nav>
+      
+      <!-- Header -->
       <div class="mb-6"><%- include('header.ejs') %></div>
-      <div class="mb-2 flex">
-        <h1 class="text-2xl">Course : <%= course.name %></h1>
-        <h2 class="text-2xl">[Chapter : <%= chapter.title %>]</h2>
+
+      <!-- Course and Chapter Titles -->
+      <div class="mb-2">
+        <h1 class="text-2xl font-bold">Course: <%= course.name %></h1>
+        <h2 class="text-xl font-semibold">[Chapter: <%= chapter.title %>]</h2>
       </div>
+
+      <!-- Content Section -->
       <div class="mb-2">
         <% if (content.length === 0) { %>
           <p class="text-gray-500 text-xl">There is no content available.</p>
         <% } else { %>
-        <% content.forEach(item => { %>
-        <div class="content-item mb-4 ml-2 p-4 bg-white rounded shadow">
-          <h3 class="text-xl font-bold">Title : <%= item.title %></h3>
-          <p class="mt-2">Description : <%= item.description %></p>
-        </div>
-        <% }) %>
+          <% content.forEach(item => { %>
+            <div class="content-item mb-4 ml-2 p-4 bg-white rounded shadow">
+              <h3 class="text-xl font-bold">Title: <%= item.title %></h3>
+              <p class="mt-2 text-gray-600">Description: <%= item.description %></p>
+            </div>
+          <% }) %>
         <% } %>
       </div>
-      <div class="mb-4 flex justify-between">
-         <% if (userRole === 'Learner') { %>
-        <% if (isCompleted) { %>
-          <button class="bg-gray-500 text-white px-4 py-2 rounded-md cursor-not-allowed" disabled>
-            MarkAsCompleted
+
+      <!-- Buttons Section (MarkAsComplete and GotoNext) -->
+      <div class="mb-4 flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0">
+        <% if (userRole === 'Learner') { %>
+          <!-- Mark as Complete Button -->
+          <% if (isCompleted) { %>
+            <button class="bg-gray-500 text-white px-4 py-2 rounded-md cursor-not-allowed" disabled>
+              Mark As Completed
+            </button>
+          <% } else { %>
+            <form action="/viewcourse/<%= courseId %>/chapters/<%= chapterId %>/content/markAsComplete" method="post" class="w-full sm:w-auto">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+              <button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 w-full sm:w-auto">
+                Mark As Complete
+              </button>
+            </form>
+          <% } %>
+
+          <!-- Goto Next Button -->
+          <button class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 w-full sm:w-auto" onclick="gotoNext(<%= nextChapter ? nextChapter.id : null %>)">
+            Goto Next
           </button>
-        <% } else { %>
-        <form action="/viewcourse/<%= courseId %>/chapters/<%= chapterId %>/content/markAsComplete" method="post">
-           <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-          <button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
-            MarkAsComplete
-          </button>
-        </form>
-         <% } %>
-        <button class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600" onclick="gotoNext(<%= nextChapter ? nextChapter.id : null %>)">
-          Goto next
-        </button>
         <% } %>
       </div>
     </div>

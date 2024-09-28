@@ -6,35 +6,87 @@
   <title><%= title %></title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    /* Show the trash icon only on hover */
+    .trash-icon {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    li:hover .trash-icon {
+      opacity: 1;
+    }
+  </style>
 </head>
 <body class="bg-gray-100">
   <div class="container mx-auto p-6">
     <h2 class="text-3xl font-semibold text-gray-700 mb-6 text-center">Available Courses</h2>
+    
+    <!-- Course List -->
     <ul id="courseList" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       <% viewcourses.forEach(course => { %>
-        <li class="bg-white shadow-lg rounded-lg p-6 transition transform hover:scale-105 duration-300">
+        <li class="relative bg-white shadow-lg rounded-lg p-6 transition-transform hover:scale-105 duration-300">
           <h3 class="text-2xl font-bold text-gray-800 mb-2"><%= course.name %></h3>
-          <h3 class="text-xl font-bold text-gray-800 mb-2">EducatorName : <%= course.educatorName %></h3>
+          <h4 class="text-xl font-bold text-gray-800 mb-2">Educator: <%= course.educatorName %></h4>
           <p class="text-gray-600 mb-4">Description: <%= course.description %></p>
 
-          <div class="flex justify-between">
-            <a href="/viewcourse/<%= course.id %>" class="bg-blue-500 text-white w-full font-medium px-4 py-2 rounded-md hover:bg-blue-600 mr-2 text-center">View Course</a>
+          <!-- Links and buttons for Educator and Learner -->
+          <div class="flex flex-col sm:flex-row justify-between space-y-2 sm:space-y-0 sm:space-x-2">
+            <a href="/viewcourse/<%= course.id %>" class="bg-blue-500 text-white w-full sm:w-auto font-medium px-4 py-2 rounded-md hover:bg-blue-600 text-center">View Course</a>
+            
             <% if (userRole === 'Educator') { %>
-            <a href="/course/<%= course.id %>" class="bg-green-500 text-white w-full font-medium px-4 py-2 rounded-md hover:bg-green-600 text-center">Edit</a>
+            <a href="/course/<%= course.id %>" class="bg-green-500 text-white w-full sm:w-auto font-medium px-4 py-2 rounded-md hover:bg-green-600 text-center">Edit</a>
+            <!-- Trash Icon for Delete (Only for Educators) -->
+            <a href="#" class="trash-icon absolute top-2 right-2" onclick="deleteCourse(<%= course.id %>)">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="w-6 h-6 text-red-600 hover:text-red-800">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+              </svg>
+            </a>
             <% } else if (userRole === 'Learner') { %>
-               <% const isEnrolled = enrollments.some(enrollment => enrollment.courseId === course.id); %>
-                <% if (isEnrolled) { %>
-                  <button  class="bg-gray-500 text-white w-full font-medium px-4 py-2 rounded-md text-center cursor-not-allowed" disabled>Enrolled</button>
+              <% const isEnrolled = enrollments.some(enrollment => enrollment.courseId === course.id); %>
+              <% if (isEnrolled) { %>
+              <button class="bg-gray-500 text-white w-full sm:w-auto font-medium px-4 py-2 rounded-md text-center cursor-not-allowed" disabled>Enrolled</button>
               <% } else { %>
-                <form action="/enroll/<%= viewcourses.id %>" method="POST">
-                  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-             <button type="submit" class="bg-green-500 text-white w-full font-medium px-4 py-2 rounded-md hover:bg-green-600 text-center">Enroll</button>
+              <form action="/enroll/<%= course.id %>" method="POST" class="w-full sm:w-auto">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                <button type="submit" class="bg-green-500 text-white font-medium px-4 py-2 rounded-md hover:bg-green-600 text-center w-full">Enroll</button>
+              </form>
+              <% } %>
             <% } %>
-          <% } %>
           </div>
         </li>
       <% }) %>
     </ul>
   </div>
+
+  <script>
+     var token = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+   function deleteCourse(id){
+        fetch(`/educator_dashboard/courseDelete/${id}`,{
+          method: "delete",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ "_csrf": token }),
+        })
+        .then((res)=>{
+          if(res.ok){
+             window.location.reload();
+          }
+         })
+        .catch((err)=>{
+          console.error(err)
+        })
+      }
+  </script>
 </body>
 </html>

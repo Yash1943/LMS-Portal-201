@@ -210,6 +210,8 @@ app.get(
         include: [{ model: Course, as: "course" }],
       });
 
+      console.log(enrollments);
+
       const isEnrolled = enrollments.length > 0;
 
       // console.log("userRole", userRole);
@@ -706,6 +708,39 @@ app.post(
     } catch (error) {
       req.flash("error", `Error:${error}`);
       console.error("Error marking chapter as complete:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+);
+
+app.delete(
+  "/educator_dashboard/courseDelete/:id",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const courseId = req.params.id;
+    try {
+      // Find all chapters associated with the course
+      const chapters = await Chapter.findAll({ where: { courseId: courseId } });
+
+      // Delete all chapter pages associated with each chapter
+      for (const chapter of chapters) {
+        await ChapterPages.destroy({ where: { chapterID: chapter.id } });
+      }
+
+      // Delete all chapters associated with the course
+      await Chapter.destroy({ where: { courseId: courseId } });
+
+      // Delete the course
+      await Course.destroy({ where: { id: courseId } });
+
+      res
+        .status(200)
+        .json({
+          message:
+            "Course and associated chapters and pages deleted successfully",
+        });
+    } catch (error) {
+      console.error("Error deleting course:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   },

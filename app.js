@@ -733,14 +733,35 @@ app.delete(
       // Delete the course
       await Course.destroy({ where: { id: courseId } });
 
-      res
-        .status(200)
-        .json({
-          message:
-            "Course and associated chapters and pages deleted successfully",
-        });
+      res.status(200).json({
+        message:
+          "Course and associated chapters and pages deleted successfully",
+      });
     } catch (error) {
       console.error("Error deleting course:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+);
+
+app.delete(
+  "/viewcourse/:courseId/chapters/:chapterId",
+  connectEnsureLogin.ensureLoggedIn(),
+  requireRoles(["Educator"]),
+  async (req, res) => {
+    const { courseId, chapterId } = req.params;
+    try {
+      // Delete all chapter pages associated with the chapter
+      await ChapterPages.destroy({ where: { chapterID: chapterId } });
+
+      // Delete the chapter
+      await Chapter.destroy({ where: { id: chapterId, courseId: courseId } });
+
+      res
+        .status(200)
+        .json({ message: "Chapter and associated pages deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting chapter:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   },

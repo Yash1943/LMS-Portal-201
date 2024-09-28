@@ -45,7 +45,7 @@
         <div class="flex flex-wrap space-x-4 mt-4 sm:mt-0">
           <% if (userRole === 'Educator') { %>
           <!-- <a href="#" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">Edit</a> -->
-          <a href="#" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700">Delete</a>
+          <!-- <a href="#" onclick="deleteCourse(<%= viewcourses.id %>)" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700">Delete</a> -->
           <% } else if (userRole === 'Learner') { %>
             <% if (existingEnrollment) { %>
               <button class="bg-gray-500 text-white px-4 py-2 rounded cursor-not-allowed" disabled>Enrolled</button>
@@ -91,7 +91,7 @@
               <% if (userRole === 'Educator') { %>
               <a href="/viewcourse/<%= viewcourses.id %>/chapters/<%= chapter.id %>/content" class="bg-blue-500 text-white font-medium px-4 py-2 rounded-md hover:bg-blue-600 text-center w-full">View Chapter</a>
               <a href="/viewcourse/<%= viewcourses.id %>/chapters/<%= chapter.id %>/addcontent" class="bg-green-500 text-white font-medium px-4 py-2 rounded-md hover:bg-green-600 text-center w-full">Add Content</a>
-              <!-- <a href="/viewcourse/<%= viewcourses.id %>/chapters/<%= chapter.id %>/edit" class="bg-green-500 text-white font-medium px-4 py-2 rounded-md hover:bg-green-600 text-center w-full">Edit</a> -->
+              <a href="#" onclick="deleteChapter(<%= viewcourses.id %>, <%= chapter.id %>)" class="bg-red-500 text-white font-medium px-4 py-2 rounded-md hover:bg-red-600 text-center w-full">Delete</a>
               <% } %>
             </div>
           </li>
@@ -100,5 +100,42 @@
         <% } %>
       </div>
     </div>
+    <script>
+     var token = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+   function deleteChapter(courseId, chapterId){
+        fetch(`/viewcourse/${courseId}/chapters/${chapterId}`,{
+          method: "delete",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ "_csrf": token }),
+        })
+        .then((res)=>{
+          if(res.ok){
+             window.location.reload();
+          }
+         })
+        .catch((err)=>{
+          console.error(err)
+        })
+      }
+       function deleteCourse(id){
+        fetch(`/educator_dashboard/courseDelete/${id}`,{
+          method: "delete",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ "_csrf": token }),
+        })
+        .then((res)=>{
+          if(res.ok){
+             window.location.reload();
+          }
+         })
+        .catch((err)=>{
+          console.error(err)
+        })
+      }
+  </script>
   </body>
 </html>

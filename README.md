@@ -10,8 +10,8 @@ This Learning Management Portal is designed to streamline online learning. It al
 
 Educators can:
 
-- Create new courses with titles, descriptions, and course materials.
-- Add chapters to courses with detailed content.
+- Create new courses with titles, descriptions, and course materials also delete the course.
+- Add chapters to courses with detailed content also delete the chapter.
 - View all courses they have authored.
 
 ### 2. Students can sign-up, sign in, and sign out
